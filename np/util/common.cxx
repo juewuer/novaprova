@@ -15,16 +15,17 @@
  */
 #include "np/util/common.hxx"
 
-namespace np {
-namespace util {
+namespace np
+{
+namespace util
+{
 using namespace std;
 
 const char *argv0 = "np";
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-void
-fatal(const char *fmt, ...)
+void fatal(const char *fmt, ...)
 {
     va_list args;
 
@@ -41,69 +42,64 @@ fatal(const char *fmt, ...)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 /* Do write() but handle short writes */
-static int
-do_write(int fd, const char *buf, int len)
+static int do_write(int fd, const char *buf, int len)
 {
     int remain = len;
 
     while (remain > 0)
     {
-	int n = write(fd, buf, remain);
-	if (n < 0)
-	    return -1;
-	buf += n;
-	remain -= n;
+        int n = write(fd, buf, remain);
+        if (n < 0)
+            return -1;
+        buf += n;
+        remain -= n;
     }
     return len;
 }
 
-void
-oom(void)
+void oom(void)
 {
     static const char message[] = ": no memory, exiting\n";
 
     if (do_write(2, argv0, strlen(argv0)) < 0)
-	exit(1);
-    if (do_write(2, message, sizeof(message)-1) < 0)
-	exit(1);
+        exit(1);
+    if (do_write(2, message, sizeof(message) - 1) < 0)
+        exit(1);
     exit(1);
 }
 
-void *
-xmalloc(size_t sz)
+void *xmalloc(size_t sz)
 {
     void *x;
 
     x = malloc(sz);
     if (!x)
-	oom();
+        oom();
     memset(x, 0, sz);
     return x;
 }
 
-char *
-xstrdup(const char *s)
+char *xstrdup(const char *s)
 {
     char *x;
     size_t len;
 
     if (!s)
-	return 0;
+        return 0;
     len = strlen(s);
-    x = (char *)malloc(len+1);
+    x = (char *)malloc(len + 1);
     if (!x)
-	oom();
+        oom();
     return strcpy(x, s);
 }
 
-void *
-xrealloc(void *p, size_t sz)
+void *xrealloc(void *p, size_t sz)
 {
     void *x;
 
     x = realloc(p, sz);
     if (!x)
-	oom();
+        oom();
     return x;
 }
 
@@ -156,58 +152,54 @@ string abs_format_iso8601(int64_t abs)
     struct tm tm;
     char buf[20];
     strftime(buf, sizeof(buf), "%Y-%m-%dT%H:%M:%S",
-	     localtime_r(&clock, &tm));
+             localtime_r(&clock, &tm));
     return string(buf);
 }
 
-static void
-rel_format_buf(int64_t rel, char *buf, int maxlen)
+static void rel_format_buf(int64_t rel, char *buf, int maxlen)
 {
     const char *sign = "";
     if (rel < 0)
     {
-	rel = -rel;
-	sign = "-";
+        rel = -rel;
+        sign = "-";
     }
     int sec = rel / NANOSEC_PER_SEC;
     int ns = rel % NANOSEC_PER_SEC;
-    snprintf(buf, maxlen, "%s%u.%03u", sign, sec, ns/1000000);
+    snprintf(buf, maxlen, "%s%u.%03u", sign, sec, ns / 1000000);
 }
 
-string
-rel_format(int64_t rel)
+string rel_format(int64_t rel)
 {
     char buf[32];
     rel_format_buf(rel, buf, sizeof(buf));
     return string(buf);
 }
 
-int64_t
-rel_time()
+int64_t rel_time()
 {
     static int64_t first;
     int64_t now = rel_now();
     if (!first)
     {
-	static const char var[] = "__NP_EPOCH";
-	const char *e = getenv(var);
-	if (e)
-	{
-	    first = strtoull(e, 0, 0);
-	}
-	else
-	{
-	    first = now;
-	    static char buf[64];
-	    snprintf(buf, sizeof(buf), "%s=%llu", var, (unsigned long long)first);
-	    putenv(buf);
-	}
+        static const char var[] = "__NP_EPOCH";
+        const char *e = getenv(var);
+        if (e)
+        {
+            first = strtoull(e, 0, 0);
+        }
+        else
+        {
+            first = now;
+            static char buf[64];
+            snprintf(buf, sizeof(buf), "%s=%llu", var, (unsigned long long)first);
+            putenv(buf);
+        }
     }
-    return now-first;
+    return now - first;
 }
 
-const char *
-rel_timestamp()
+const char *rel_timestamp()
 {
     static char buf[32];
     rel_format_buf(rel_time(), buf, sizeof(buf));
@@ -216,46 +208,41 @@ rel_timestamp()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-int
-u32cmp(uint32_t ul1, uint32_t ul2)
+int u32cmp(uint32_t ul1, uint32_t ul2)
 {
     if (ul1 > ul2)
-	return 1;
+        return 1;
     if (ul1 < ul2)
-	return -1;
+        return -1;
     return 0;
 }
 
-int
-u64cmp(uint64_t ull1, uint64_t ull2)
+int u64cmp(uint64_t ull1, uint64_t ull2)
 {
     if (ull1 > ull2)
-	return 1;
+        return 1;
     if (ull1 < ull2)
-	return -1;
+        return -1;
     return 0;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-unsigned long
-page_size(void)
+unsigned long page_size(void)
 {
     static unsigned long ps;
     if (!ps)
-	ps = sysconf(_SC_PAGESIZE);
+        ps = sysconf(_SC_PAGESIZE);
     return ps;
 }
 
-unsigned long
-page_round_up(unsigned long x)
+unsigned long page_round_up(unsigned long x)
 {
     unsigned long ps = page_size();
     return ((x + ps - 1) / ps) * ps;
 }
 
-unsigned long
-page_round_down(unsigned long x)
+unsigned long page_round_down(unsigned long x)
 {
     unsigned long ps = page_size();
     return (x / ps) * ps;
@@ -263,4 +250,5 @@ page_round_down(unsigned long x)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 // close the namespaces
-}; };
+};
+};

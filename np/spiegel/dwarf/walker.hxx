@@ -21,47 +21,53 @@
 #include "entry.hxx"
 #include "compile_unit.hxx"
 
-namespace np {
-namespace spiegel {
-namespace dwarf {
+namespace np
+{
+namespace spiegel
+{
+namespace dwarf
+{
 
 class walker_t
 {
-public:
+  public:
     walker_t(compile_unit_t *cu)
-     :  id_(next_id_++),
-	compile_unit_(cu),
-	reader_(cu->get_contents()),
-	level_(0),
-	filter_tag_(0)
+        :  id_(next_id_++),
+           compile_unit_(cu),
+           reader_(cu->get_contents()),
+           level_(0),
+           filter_tag_(0)
     {
     }
 
-    walker_t(const walker_t &o)
-     :  id_(next_id_++),
-	compile_unit_(o.compile_unit_),
-	reader_(o.reader_),
-	// Note: we don't clone the entry, on the assumption
-	// that it's about to be clobbered anyway
-	level_(o.level_),
-	filter_tag_(o.filter_tag_)
+    walker_t(const walker_t& o)
+        :  id_(next_id_++),
+           compile_unit_(o.compile_unit_),
+           reader_(o.reader_),
+           // Note: we don't clone the entry, on the assumption
+           // that it's about to be clobbered anyway
+           level_(o.level_),
+           filter_tag_(o.filter_tag_)
     {
-	// but we need the entry's level for the move
-	// operations to work correctly
-	entry_.partial_setup(o.entry_);
+        // but we need the entry's level for the move
+        // operations to work correctly
+        entry_.partial_setup(o.entry_);
     }
 
     walker_t(reference_t ref)
-     :  id_(next_id_++),
-	filter_tag_(0)
+        :  id_(next_id_++),
+           filter_tag_(0)
     {
-	seek(ref);
+        seek(ref);
     }
 
-    const entry_t *get_entry() const { return &entry_; }
+    const entry_t *get_entry() const
+    {
+        return &entry_;
+    }
     reference_t get_reference() const
     {
-	return compile_unit_->make_reference(entry_.get_offset());
+        return compile_unit_->make_reference(entry_.get_offset());
     }
     std::vector<reference_t> get_path() const;
 
@@ -79,17 +85,23 @@ public:
     const entry_t *move_to(reference_t);
     const entry_t *move_up();
 
-    uint16_t get_dwarf_version() const { return compile_unit_->get_version(); }
+    uint16_t get_dwarf_version() const
+    {
+        return compile_unit_->get_version();
+    }
 
-    void set_filter_tag(unsigned tag) { filter_tag_ = tag; }
+    void set_filter_tag(unsigned tag)
+    {
+        filter_tag_ = tag;
+    }
 
-private:
+  private:
     enum read_entry_results_t
     {
-	RE_EOF = -1,
-	RE_EOL = 0,
-	RE_OK = 1,
-	RE_FILTERED = 2,
+        RE_EOF = -1,
+        RE_EOL = 0,
+        RE_OK = 1,
+        RE_FILTERED = 2,
     };
 
     void seek(reference_t ref);
@@ -110,6 +122,8 @@ private:
 
 
 // close namespaces
-}; }; };
+};
+};
+};
 
 #endif // __np_spiegel_dwarf_walker_hxx__

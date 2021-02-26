@@ -17,15 +17,14 @@
 #include "except.h"
 #include <sys/time.h>
 #if HAVE_VALGRIND
-#include <valgrind/valgrind.h>
+    #include <valgrind/valgrind.h>
 #endif
 
 using namespace std;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static void
-be_valground(void)
+static void be_valground(void)
 {
 #if HAVE_VALGRIND
     const char *env;
@@ -35,25 +34,25 @@ be_valground(void)
     const char **p;
 
     if (RUNNING_ON_VALGRIND)
-	return;
+        return;
 
     env = getenv("NOVAPROVA_VALGRIND");
     if (env && !strcmp(env, "no"))
-	return;
+        return;
 
     if (np::spiegel::platform::is_running_under_debugger())
     {
-	fprintf(stderr, "np: disabling Valgrind under debugger\n");
-	return;
+        fprintf(stderr, "np: disabling Valgrind under debugger\n");
+        return;
     }
 
     if (!np::spiegel::platform::get_argv(&argc, &argv))
-	return;
+        return;
 
     fprintf(stderr, "[%s] np: starting valgrind\n",
-	    np::util::rel_timestamp());
+            np::util::rel_timestamp());
 
-    p = newargv = (const char **)np::util::xmalloc(sizeof(char *) * (argc+6));
+    p = newargv = (const char **)np::util::xmalloc(sizeof(char *) * (argc + 6));
     *p++ = VALGRIND_BINARY;
     *p++ = "-q";
     *p++ = "--tool=memcheck";
@@ -62,9 +61,9 @@ be_valground(void)
     *p++ = "--suppressions=" _NP_VALGRIND_SUPPRESSION_FILE;
 #endif
     while (*argv)
-	*p++ = *argv++;
+        *p++ = *argv++;
 
-    execv(newargv[0], (char * const *)newargv);
+    execv(newargv[0], (char *const *)newargv);
     perror(newargv[0]);
     exit(1);
 #endif
@@ -94,8 +93,7 @@ be_valground(void)
  *
  * \ingroup main
  */
-extern "C" np_runner_t *
-np_init(void)
+extern "C" np_runner_t *np_init(void)
 {
     be_valground();
     std::set_terminate(__np_terminate_handler);
@@ -113,15 +111,13 @@ np_init(void)
  *
  * \ingroup main
  */
-extern "C" void
-np_done(np_runner_t *runner)
+extern "C" void np_done(np_runner_t *runner)
 {
     delete runner;
     np::testmanager_t::done();
 }
 
-extern "C" const char *
-np_rel_timestamp(void)
+extern "C" const char *np_rel_timestamp(void)
 {
     return np::util::rel_timestamp();
 }

@@ -21,15 +21,13 @@
 #include "np/util/profile.hxx"
 #include "np/util/tok.hxx"
 
-static void
-usage(const char *argv0)
+static void usage(const char *argv0)
 {
     fprintf(stderr, "Usage: %s [-f output-format] [test-spec...]\n", argv0);
     exit(1);
 }
 
-int
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     int ec = 0;
     np_plan_t *plan = 0;
@@ -40,38 +38,38 @@ main(int argc, char **argv)
     int c;
     static const struct option opts[] =
     {
-	{ "format", required_argument, NULL, 'f' },
-	{ "jobs", required_argument, NULL, 'j' },
-	{ "list", no_argument, NULL, 'l' },
-	{ NULL, 0, NULL, 0 },
+        { "format", required_argument, NULL, 'f' },
+        { "jobs", required_argument, NULL, 'j' },
+        { "list", no_argument, NULL, 'l' },
+        { NULL, 0, NULL, 0 },
     };
 
     /* Parse arguments */
     while ((c = getopt_long(argc, argv, "f:j:l", opts, NULL)) >= 0)
     {
-	switch (c)
-	{
-	case 'f':
-	    output_formats = optarg;
-	    break;
-	case 'j':
-	    if (!strcasecmp(optarg, "max"))
-		concurrency = 0;
-	    else if ((concurrency = atoi(optarg)) <= 0)
-		usage(argv[0]);
-	    break;
-	case 'l':
-	    mode = LIST;
-	    break;
-	default:
-	    usage(argv[0]);
-	}
+        switch (c)
+        {
+            case 'f':
+                output_formats = optarg;
+                break;
+            case 'j':
+                if (!strcasecmp(optarg, "max"))
+                    concurrency = 0;
+                else if ((concurrency = atoi(optarg)) <= 0)
+                    usage(argv[0]);
+                break;
+            case 'l':
+                mode = LIST;
+                break;
+            default:
+                usage(argv[0]);
+        }
     }
     if (optind < argc)
     {
-	/* Some tests were specified on the commandline */
-	plan = np_plan_new();
-	np_plan_add_specs(plan, argc-optind, (const char **)argv+optind);
+        /* Some tests were specified on the commandline */
+        plan = np_plan_new();
+        np_plan_add_specs(plan, argc - optind, (const char **)argv + optind);
     }
 
     /* Initialise the NovaProva library */
@@ -79,38 +77,39 @@ main(int argc, char **argv)
 
     switch (mode)
     {
-    case LIST:	    /* List the specified (or all the discovered) tests */
-	np_list_tests(runner, plan);
-	break;
+        case LIST:	    /* List the specified (or all the discovered) tests */
+            np_list_tests(runner, plan);
+            break;
 
-    case UNKNOWN:
-    case RUN:	    /* Run the specified (or all the discovered) tests */
-	/* Set the output format */
-	if (output_formats)
-	{
-		const char *format;
-		np::util::tok_t tok(output_formats, ",");
-		while ((format = tok.next()))
-		{
-			if (!np_set_output_format(runner, format))
-			{
-				fprintf(stderr, "np: unknown output format '%s'\n", output_formats);
-				exit(1);
-			}
-		}
-	}
+        case UNKNOWN:
+        case RUN:	    /* Run the specified (or all the discovered) tests */
+            /* Set the output format */
+            if (output_formats)
+            {
+                const char *format;
+                np::util::tok_t tok(output_formats, ",");
+                while ((format = tok.next()))
+                {
+                    if (!np_set_output_format(runner, format))
+                    {
+                        fprintf(stderr, "np: unknown output format '%s'\n", output_formats);
+                        exit(1);
+                    }
+                }
+            }
 
-	/* Set how many tests will be run in parallel */
-	if (concurrency >= 0)
-	    np_set_concurrency(runner, concurrency);
+            /* Set how many tests will be run in parallel */
+            if (concurrency >= 0)
+                np_set_concurrency(runner, concurrency);
 
-	/* Run the specified tests */
-	ec = np_run_tests(runner, plan);
-	break;
+            /* Run the specified tests */
+            ec = np_run_tests(runner, plan);
+            break;
     }
 
     /* Shut down the NovaProva library */
-    if (plan) np_plan_delete(plan);
+    if (plan)
+        np_plan_delete(plan);
     np_done(runner);
 
     exit(ec);

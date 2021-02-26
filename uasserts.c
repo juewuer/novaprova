@@ -18,31 +18,27 @@
 #include "np_priv.h"
 #include "except.h"
 
-void
-__np_pass(const char *file, int line)
+void __np_pass(const char *file, int line)
 {
     np_throw(np::event_t(np::EV_EXPASS, "NP_PASS called").at_line(file, line));
 }
 
-void
-__np_fail(const char *file, int line)
+void __np_fail(const char *file, int line)
 {
     np_throw(np::event_t(np::EV_EXFAIL, "NP_FAIL called")
-		.at_line(file, line).with_stack());
+             .at_line(file, line).with_stack());
 }
 
-void
-__np_notapplicable(const char *file, int line)
+void __np_notapplicable(const char *file, int line)
 {
     np_throw(np::event_t(np::EV_EXNA, "NP_NOTAPPLICABLE called")
-		.at_line(file, line).with_stack());
+             .at_line(file, line).with_stack());
 }
 
-void
-__np_assert_failed(const char *file,
-		    int line,
-		    const char *fmt,
-		    ...)
+void __np_assert_failed(const char *file,
+                        int line,
+                        const char *fmt,
+                        ...)
 {
     va_list args;
     static char condition[1024];
@@ -52,6 +48,6 @@ __np_assert_failed(const char *file,
     va_end(args);
 
     np_throw(np::event_t(np::EV_ASSERT, condition)
-	    .at_line(file, line).with_stack());
+             .at_line(file, line).with_stack());
 }
 

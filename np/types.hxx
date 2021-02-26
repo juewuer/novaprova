@@ -16,13 +16,14 @@
 #ifndef __NP_TYPES_H__
 #define __NP_TYPES_H__ 1
 
-namespace np {
+namespace np
+{
 
 enum result_t
 {
     /* Note ordinal values: we use MAX() to combine
      * multiple results for a given test */
-    R_UNKNOWN=0,
+    R_UNKNOWN = 0,
     R_PASS,
     R_NOTAPPLICABLE,
     R_FAIL
