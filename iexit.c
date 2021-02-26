@@ -21,21 +21,21 @@
 
 namespace np
 {
-using namespace std;
+    using namespace std;
 
-static void mock_exit(int status)
-{
-    static char cond[64];
-    snprintf(cond, sizeof(cond), "exit(%d)", status);
-    np_throw(np::event_t(np::EV_EXIT, cond).with_stack());
-}
+    static void mock_exit(int status)
+    {
+        static char cond[64];
+        snprintf(cond, sizeof(cond), "exit(%d)", status);
+        np_throw(np::event_t(np::EV_EXIT, cond).with_stack());
+    }
 
-void init_exit_intercepts(testnode_t *tn)
-{
-    tn->add_mock((np::spiegel::addr_t)&exit,
-                 "exit",
-                 (np::spiegel::addr_t)&mock_exit);
-}
+    void init_exit_intercepts(testnode_t *tn)
+    {
+        tn->add_mock((np::spiegel::addr_t)&exit,
+                     "exit",
+                     (np::spiegel::addr_t)&mock_exit);
+    }
 
-// close the namespace
+    // close the namespace
 };

@@ -19,28 +19,29 @@
 #include "np/util/common.hxx"
 #include "np/listener.hxx"
 
-namespace np {
-
-class proxy_listener_t : public listener_t
+namespace np
 {
-public:
-    proxy_listener_t(int);
-    ~proxy_listener_t();
 
-    void begin();
-    void end();
-    void begin_job(const job_t *);
-    void end_job(const job_t *, result_t);
-    void add_event(const job_t *, const event_t *ev);
+    class proxy_listener_t : public listener_t
+    {
+      public:
+        proxy_listener_t(int);
+        ~proxy_listener_t();
 
-    /* proxyl.c */
-    static bool handle_call(int fd, job_t *, result_t *resp);
+        void begin();
+        void end();
+        void begin_job(const job_t *);
+        void end_job(const job_t *, result_t);
+        void add_event(const job_t *, const event_t *ev);
 
-private:
-    int fd_;
-};
+        /* proxyl.c */
+        static bool handle_call(int fd, job_t *, result_t *resp);
 
-// close the namespace
+      private:
+        int fd_;
+    };
+
+    // close the namespace
 };
 
 #endif /* __NP_PROXY_LISTENER_H__ */

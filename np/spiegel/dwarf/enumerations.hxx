@@ -280,21 +280,21 @@ enum encoding_values
 
 namespace np
 {
-namespace spiegel
-{
-namespace dwarf
-{
+    namespace spiegel
+    {
+        namespace dwarf
+        {
 
-extern string_table_t secnames;
-extern string_table_t childvals;
-extern string_table_t formvals;
-extern string_table_t tagnames;
-extern string_table_t attrnames;
-extern string_table_t encvals;
+            extern string_table_t secnames;
+            extern string_table_t childvals;
+            extern string_table_t formvals;
+            extern string_table_t tagnames;
+            extern string_table_t attrnames;
+            extern string_table_t encvals;
 
-// close namespaces
-};
-};
+            // close namespaces
+        };
+    };
 };
 
 #endif // __np_spiegel_dwarf_enumerations_hxx__

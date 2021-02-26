@@ -18,26 +18,26 @@
 namespace np
 {
 
-const char *as_string(functype_t type)
-{
-    switch (type)
+    const char *as_string(functype_t type)
     {
-        case FT_UNKNOWN:
-            return "unknown";
-        case FT_BEFORE:
-            return "before";
-        case FT_TEST:
-            return "test";
-        case FT_AFTER:
-            return "after";
-        case FT_MOCK:
-            return "mock";
-        case FT_PARAM:
-            return "param";
-        default:
-            return "INTERNAL ERROR!";
+        switch (type)
+        {
+            case FT_UNKNOWN:
+                return "unknown";
+            case FT_BEFORE:
+                return "before";
+            case FT_TEST:
+                return "test";
+            case FT_AFTER:
+                return "after";
+            case FT_MOCK:
+                return "mock";
+            case FT_PARAM:
+                return "param";
+            default:
+                return "INTERNAL ERROR!";
+        }
     }
-}
 
-// close the namespace
+    // close the namespace
 };

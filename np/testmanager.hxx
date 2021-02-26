@@ -24,62 +24,62 @@
 
 namespace np
 {
-namespace spiegel
-{
-namespace dwarf
-{
-class state_t;
-}
-}
+    namespace spiegel
+    {
+        namespace dwarf
+        {
+            class state_t;
+        }
+    }
 }
 
 namespace np
 {
 
-class classifier_t;
+    class classifier_t;
 
-class testmanager_t : public np::util::zalloc
-{
-  public:
-    /* testmanager is a singleton */
-    static testmanager_t *instance();
-
-    testnode_t *find_node(const char *nm) const
+    class testmanager_t : public np::util::zalloc
     {
-        return root_ ? root_->find(nm) : 0;
-    }
-    testnode_t *get_root()
-    {
-        return root_;
-    }
+      public:
+        /* testmanager is a singleton */
+        static testmanager_t *instance();
 
-    static void done()
-    {
-        delete instance_;
-    }
+        testnode_t *find_node(const char *nm) const
+        {
+            return root_ ? root_->find(nm) : 0;
+        }
+        testnode_t *get_root()
+        {
+            return root_;
+        }
 
-    spiegel::function_t *find_mock_target(std::string name);
+        static void done()
+        {
+            delete instance_;
+        }
 
-  private:
-    testmanager_t();
-    ~testmanager_t();
+        spiegel::function_t *find_mock_target(std::string name);
 
-    void print_banner();
-    functype_t classify_function(const char *func, char *match_return, size_t maxmatch);
-    void add_classifier(const char *re, bool case_sensitive, functype_t type);
-    void setup_classifiers();
-    void discover_functions();
-    void setup_builtin_intercepts();
+      private:
+        testmanager_t();
+        ~testmanager_t();
 
-    static testmanager_t *instance_;
+        void print_banner();
+        functype_t classify_function(const char *func, char *match_return, size_t maxmatch);
+        void add_classifier(const char *re, bool case_sensitive, functype_t type);
+        void setup_classifiers();
+        void discover_functions();
+        void setup_builtin_intercepts();
 
-    std::vector<classifier_t *> classifiers_;
-    spiegel::dwarf::state_t *spiegel_;
-    testnode_t *root_;
-    testnode_t *common_;	// nodes from filesystem root down to root_
-};
+        static testmanager_t *instance_;
 
-// close the namespaces
+        std::vector<classifier_t *> classifiers_;
+        spiegel::dwarf::state_t *spiegel_;
+        testnode_t *root_;
+        testnode_t *common_;	// nodes from filesystem root down to root_
+    };
+
+    // close the namespaces
 };
 
 #endif /* __NP_TESTMANAGER_H__ */

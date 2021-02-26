@@ -71,56 +71,56 @@
  */
 namespace np
 {
-namespace util
-{
+    namespace util
+    {
 
-extern int u32cmp(uint32_t ul1, uint32_t ul2);
-extern int u64cmp(uint64_t ull1, uint64_t ull2);
+        extern int u32cmp(uint32_t ul1, uint32_t ul2);
+        extern int u64cmp(uint64_t ull1, uint64_t ull2);
 
-extern void fatal(const char *fmt, ...)
-__attribute__((noreturn))
-__attribute__((format(printf, 1, 2)));
+        extern void fatal(const char *fmt, ...)
+        __attribute__((noreturn))
+        __attribute__((format(printf, 1, 2)));
 
-extern void oom(void) __attribute__((noreturn));
-extern void *xmalloc(size_t sz);
-extern void *xrealloc(void *, size_t);
-extern char *xstrdup(const char *s);
+        extern void oom(void) __attribute__((noreturn));
+        extern void *xmalloc(size_t sz);
+        extern void *xrealloc(void *, size_t);
+        extern char *xstrdup(const char *s);
 #define xfree(v) \
     do { free(v); (v) = NULL; } while(0)
 #define xstr(x)  ((x) ? (x) : "")
-extern const char *argv0;
+        extern const char *argv0;
 
-class zalloc
-{
-  public:
-    void *operator new (size_t sz)
-    {
-        return xmalloc(sz);
-    }
-    void operator delete (void *x)
-    {
-        free(x);
-    }
-};
+        class zalloc
+        {
+          public:
+            void *operator new (size_t sz)
+            {
+                return xmalloc(sz);
+            }
+            void operator delete (void *x)
+            {
+                free(x);
+            }
+        };
 
-extern std::string hex(unsigned long x);
-extern std::string HEX(unsigned long x);
-extern std::string dec(unsigned int x);
+        extern std::string hex(unsigned long x);
+        extern std::string HEX(unsigned long x);
+        extern std::string dec(unsigned int x);
 
 #define NANOSEC_PER_SEC	    (1000000000LL)
-extern int64_t rel_now();
-extern int64_t abs_now();
-extern std::string abs_format_iso8601(int64_t);
-extern std::string rel_format(int64_t);
-extern int64_t rel_time();
-extern const char *rel_timestamp();
+        extern int64_t rel_now();
+        extern int64_t abs_now();
+        extern std::string abs_format_iso8601(int64_t);
+        extern std::string rel_format(int64_t);
+        extern int64_t rel_time();
+        extern const char *rel_timestamp();
 
-extern unsigned long page_size(void);
-extern unsigned long page_round_up(unsigned long x);
-extern unsigned long page_round_down(unsigned long x);
+        extern unsigned long page_size(void);
+        extern unsigned long page_round_up(unsigned long x);
+        extern unsigned long page_round_down(unsigned long x);
 
-// close the namespaces
-};
+        // close the namespaces
+    };
 };
 
 #endif /* __NP_COMMON_HXX__ */

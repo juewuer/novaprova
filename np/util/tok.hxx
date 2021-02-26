@@ -28,40 +28,40 @@
 
 namespace np
 {
-namespace util
-{
+    namespace util
+    {
 
-/*
- * A simple re-entrant string tokenizer, wraps strtok_r().
- */
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+        /*
+         * A simple re-entrant string tokenizer, wraps strtok_r().
+         */
+        /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-class tok_t
-{
-  public:
-    /* ctors */
-    tok_t(const char *str, const char *sep = 0);    /* const=>copy */
-    tok_t(char *str, const char *sep = 0);  	    /* nonconst=>don't copy */
-    /* dtor */
-    ~tok_t();
+        class tok_t
+        {
+          public:
+            /* ctors */
+            tok_t(const char *str, const char *sep = 0);    /* const=>copy */
+            tok_t(char *str, const char *sep = 0);  	    /* nonconst=>don't copy */
+            /* dtor */
+            ~tok_t();
 
-    /*
-     * Returns next token or 0 when last token reached.
-     */
-    const char *next();
+            /*
+             * Returns next token or 0 when last token reached.
+             */
+            const char *next();
 
-  private:
-    void init(char *str, const char *sep);
+          private:
+            void init(char *str, const char *sep);
 
-    bool first_;
-    char *buf_;
-    char *state_;
-    const char *sep_;
-    bool buf_is_ours_;
-};
+            bool first_;
+            char *buf_;
+            char *state_;
+            const char *sep_;
+            bool buf_is_ours_;
+        };
 
-// close the namespaces
-};
+        // close the namespaces
+    };
 };
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

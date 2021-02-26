@@ -22,58 +22,58 @@
 
 namespace np
 {
-namespace spiegel
-{
-namespace platform
-{
+    namespace spiegel
+    {
+        namespace platform
+        {
 
-extern bool get_argv(int *argcp, char ***argvp);
-extern char *self_exe();
+            extern bool get_argv(int *argcp, char ***argvp);
+            extern char *self_exe();
 
-struct linkobj_t
-{
-    const char *name;
-    std::vector<np::spiegel::mapping_t> mappings;
-};
-extern std::vector<linkobj_t> get_linkobjs();
+            struct linkobj_t
+            {
+                const char *name;
+                std::vector<np::spiegel::mapping_t> mappings;
+            };
+            extern std::vector<linkobj_t> get_linkobjs();
 
-void add_plt(const np::spiegel::mapping_t&);
-np::spiegel::addr_t normalise_address(np::spiegel::addr_t);
+            void add_plt(const np::spiegel::mapping_t&);
+            np::spiegel::addr_t normalise_address(np::spiegel::addr_t);
 
-// extern np::spiegel::value_t invoke(void *fnaddr, vector<np::spiegel::value_t> args);
+            // extern np::spiegel::value_t invoke(void *fnaddr, vector<np::spiegel::value_t> args);
 
-extern int text_map_writable(addr_t addr, size_t len);
-extern int text_restore(addr_t addr, size_t len);
+            extern int text_map_writable(addr_t addr, size_t len);
+            extern int text_restore(addr_t addr, size_t len);
 
-struct intstate_t
-{
+            struct intstate_t
+            {
 #if defined(_NP_x86) || defined(_NP_x86_64)
-    enum { UNKNOWN, PUSHBP, OTHER } type_;
-    unsigned char orig_;	    /* first byte of original insn */
+                enum { UNKNOWN, PUSHBP, OTHER } type_;
+                unsigned char orig_;	    /* first byte of original insn */
 
-    intstate_t()
-        : type_(UNKNOWN), orig_(0)  {}
+                intstate_t()
+                    : type_(UNKNOWN), orig_(0)  {}
 #endif
-};
-extern int install_intercept(np::spiegel::addr_t,
-                             intstate_t& state,
-                             /*return*/std::string& err);
-extern int uninstall_intercept(np::spiegel::addr_t,
-                               intstate_t& state,
-                               /*return*/std::string& err);
+            };
+            extern int install_intercept(np::spiegel::addr_t,
+                                         intstate_t& state,
+                                         /*return*/std::string& err);
+            extern int uninstall_intercept(np::spiegel::addr_t,
+                                           intstate_t& state,
+                                           /*return*/std::string& err);
 
-extern std::vector<np::spiegel::addr_t> get_stacktrace();
+            extern std::vector<np::spiegel::addr_t> get_stacktrace();
 
-extern bool is_running_under_debugger();
+            extern bool is_running_under_debugger();
 
-extern std::vector<std::string> get_file_descriptors();
+            extern std::vector<std::string> get_file_descriptors();
 
-extern char *current_exception_type();
-extern void cleanup_current_exception();
+            extern char *current_exception_type();
+            extern void cleanup_current_exception();
 
-// close namespaces
-};
-};
+            // close namespaces
+        };
+    };
 };
 
 #endif // __np_spiegel_platform_common_hxx__

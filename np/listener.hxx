@@ -23,27 +23,27 @@
 namespace np
 {
 
-class event_t;
-class job_t;
+    class event_t;
+    class job_t;
 
-class listener_t
-{
-  public:
-    listener_t() {}
-    virtual ~listener_t() {}
-
-    virtual bool needs_stdout() const
+    class listener_t
     {
-        return false;
-    }
-    virtual void begin() = 0;
-    virtual void end() = 0;
-    virtual void begin_job(const job_t *) = 0;
-    virtual void end_job(const job_t *, result_t) = 0;
-    virtual void add_event(const job_t *, const event_t *) = 0;
-};
+      public:
+        listener_t() {}
+        virtual ~listener_t() {}
 
-// close the namespace
+        virtual bool needs_stdout() const
+        {
+            return false;
+        }
+        virtual void begin() = 0;
+        virtual void end() = 0;
+        virtual void begin_job(const job_t *) = 0;
+        virtual void end_job(const job_t *, result_t) = 0;
+        virtual void add_event(const job_t *, const event_t *) = 0;
+    };
+
+    // close the namespace
 };
 
 #endif /* __NP_LISTENER_H__ */

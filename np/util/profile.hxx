@@ -18,22 +18,22 @@
 
 namespace np
 {
-namespace profile
-{
+    namespace profile
+    {
 
-class probe_t
-{
-  public:
-    probe_t(const char *function);
-    ~probe_t();
+        class probe_t
+        {
+          public:
+            probe_t(const char *function);
+            ~probe_t();
 
-  private:
-    void log(const char *which);
+          private:
+            void log(const char *which);
 
-    const char *function_;
-    static int depth_;
-    static int log_fd_;
-};
+            const char *function_;
+            static int depth_;
+            static int log_fd_;
+        };
 
 #if 1
     #define PROFILE
@@ -41,8 +41,8 @@ class probe_t
     #define PROFILE np::profile::probe_t __np_profile_probe(__FUNCTION__);
 #endif
 
-// close the namespace
-};
+        // close the namespace
+    };
 };
 
 #endif /* __NP_PROFILE_H__ */

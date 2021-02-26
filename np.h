@@ -27,8 +27,8 @@
 #ifdef __cplusplus
 namespace np
 {
-class plan_t;
-class runner_t;
+    class plan_t;
+    class runner_t;
 };
 typedef class np::plan_t np_plan_t;
 typedef class np::runner_t np_runner_t;

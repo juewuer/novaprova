@@ -22,28 +22,28 @@
 namespace foo
 {
 
-class exception : public std::exception
-{
-  private:
-    char *msg_;
-
-  public:
-    exception() throw() : msg_(0) {}
-    exception(const char *m) throw() : msg_(m ? strdup(m) : 0) {}
-    ~exception() throw()
+    class exception : public std::exception
     {
-        free(msg_);
-    }
-    const char *what() const throw()
-    {
-        return msg_;
-    }
-};
+      private:
+        char *msg_;
 
-void bar() throw(exception)
-{
-    throw exception("Oh that went badly");
-}
+      public:
+        exception() throw() : msg_(0) {}
+        exception(const char *m) throw() : msg_(m ? strdup(m) : 0) {}
+        ~exception() throw()
+        {
+            free(msg_);
+        }
+        const char *what() const throw()
+        {
+            return msg_;
+        }
+    };
+
+    void bar() throw(exception)
+    {
+        throw exception("Oh that went badly");
+    }
 
 };
 

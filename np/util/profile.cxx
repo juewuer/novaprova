@@ -19,48 +19,48 @@
 
 namespace np
 {
-namespace profile
-{
-
-int probe_t::depth_ = 0;
-int probe_t::log_fd_ = -2;
-
-probe_t::probe_t(const char *function)
-    :  function_(function)
-{
-    log("begin");
-    depth_++;
-}
-
-probe_t::~probe_t()
-{
-    depth_--;
-    log("end");
-}
-
-void probe_t::log(const char *which)
-{
-    if (log_fd_ == -2)
+    namespace profile
     {
-        static const char filename[] = "novaprova.profile.dat";
-        log_fd_ = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0666);
-        if (log_fd_ < 0)
+
+        int probe_t::depth_ = 0;
+        int probe_t::log_fd_ = -2;
+
+        probe_t::probe_t(const char *function)
+            :  function_(function)
         {
-            fprintf(stderr, "Cannot open %s for writing: %s\n",
-                    filename, strerror(errno));
+            log("begin");
+            depth_++;
         }
-    }
 
-    if (log_fd_ >= 0)
-    {
-        char line[512];
-        snprintf(line, sizeof(line), "%lld %d %d %s %s\n",
-                 (long long)np::util::rel_time(),
-                 (int)getpid(), depth_, which, function_);
-        write(log_fd_, line, strlen(line));
-    }
-}
+        probe_t::~probe_t()
+        {
+            depth_--;
+            log("end");
+        }
 
-// close the namespaces
-};
+        void probe_t::log(const char *which)
+        {
+            if (log_fd_ == -2)
+            {
+                static const char filename[] = "novaprova.profile.dat";
+                log_fd_ = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+                if (log_fd_ < 0)
+                {
+                    fprintf(stderr, "Cannot open %s for writing: %s\n",
+                            filename, strerror(errno));
+                }
+            }
+
+            if (log_fd_ >= 0)
+            {
+                char line[512];
+                snprintf(line, sizeof(line), "%lld %d %d %s %s\n",
+                         (long long)np::util::rel_time(),
+                         (int)getpid(), depth_, which, function_);
+                write(log_fd_, line, strlen(line));
+            }
+        }
+
+        // close the namespaces
+    };
 };

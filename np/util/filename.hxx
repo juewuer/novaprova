@@ -20,37 +20,37 @@
 
 namespace np
 {
-namespace util
-{
-
-class filename_t : public std::string
-{
-  public:
-    filename_t() {}
-    filename_t(const filename_t& o) : std::string(o.c_str()) {}
-    filename_t(const std::string& o) : std::string(o) {}
-    filename_t(const char *s) : std::string(s ? s : "") {}
-
-    bool is_absolute() const
+    namespace util
     {
-        return (length() && at(0) == '/');
-    }
-    bool is_path_tail(filename_t file) const;
-    filename_t make_absolute() const;
-    filename_t make_absolute_to_file(filename_t absfile) const;
-    filename_t make_absolute_to_dir(filename_t absdir) const;
-    filename_t normalise() const;
-    filename_t basename() const;
-    static filename_t current_dir();
 
-    void pop_back();
+        class filename_t : public std::string
+        {
+          public:
+            filename_t() {}
+            filename_t(const filename_t& o) : std::string(o.c_str()) {}
+            filename_t(const std::string& o) : std::string(o) {}
+            filename_t(const char *s) : std::string(s ? s : "") {}
 
-  private:
-    filename_t make_absolute_to(filename_t absfile, bool isdir) const;
-};
+            bool is_absolute() const
+            {
+                return (length() && at(0) == '/');
+            }
+            bool is_path_tail(filename_t file) const;
+            filename_t make_absolute() const;
+            filename_t make_absolute_to_file(filename_t absfile) const;
+            filename_t make_absolute_to_dir(filename_t absdir) const;
+            filename_t normalise() const;
+            filename_t basename() const;
+            static filename_t current_dir();
 
-// close the namespaces
-};
+            void pop_back();
+
+          private:
+            filename_t make_absolute_to(filename_t absfile, bool isdir) const;
+        };
+
+        // close the namespaces
+    };
 };
 
 #endif // __spiegel_filename_hxx__

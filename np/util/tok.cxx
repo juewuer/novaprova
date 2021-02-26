@@ -25,55 +25,55 @@
 
 namespace np
 {
-namespace util
-{
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-void tok_t::init(char *str, const char *sep)
-{
-    first_ = true;
-    buf_ = str;
-    state_ = 0;
-    sep_ = (sep == 0 ? " \t\r\n" : sep);
-}
-
-tok_t::tok_t(const char *str, const char *sep)
-{
-    init((str == 0 ? 0 : xstrdup(str)), sep);
-    buf_is_ours_ = true;
-}
-
-tok_t::tok_t(char *str, const char *sep)
-{
-    init(str, sep);
-    buf_is_ours_ = false;
-}
-
-tok_t::~tok_t()
-{
-    if (buf_is_ours_)
-        free(buf_);
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-const char *tok_t::next()
-{
-    if (!buf_)
-        return 0;
-
-    if (first_)
+    namespace util
     {
-        first_ = false;
-        return strtok_r(buf_, sep_, &state_);
-    }
 
-    return strtok_r(0, sep_, &state_);
-}
+        /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-// close the namespaces
-};
+        void tok_t::init(char *str, const char *sep)
+        {
+            first_ = true;
+            buf_ = str;
+            state_ = 0;
+            sep_ = (sep == 0 ? " \t\r\n" : sep);
+        }
+
+        tok_t::tok_t(const char *str, const char *sep)
+        {
+            init((str == 0 ? 0 : xstrdup(str)), sep);
+            buf_is_ours_ = true;
+        }
+
+        tok_t::tok_t(char *str, const char *sep)
+        {
+            init(str, sep);
+            buf_is_ours_ = false;
+        }
+
+        tok_t::~tok_t()
+        {
+            if (buf_is_ours_)
+                free(buf_);
+        }
+
+        /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+        const char *tok_t::next()
+        {
+            if (!buf_)
+                return 0;
+
+            if (first_)
+            {
+                first_ = false;
+                return strtok_r(buf_, sep_, &state_);
+            }
+
+            return strtok_r(0, sep_, &state_);
+        }
+
+        /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+        // close the namespaces
+    };
 };
 /*END*/

@@ -22,37 +22,37 @@
 namespace np
 {
 
-class classifier_t : public np::util::zalloc
-{
-  public:
-    classifier_t()
+    class classifier_t : public np::util::zalloc
     {
-        results_[0] = false;
-        results_[1] = true;
-    }
-    ~classifier_t()
-    {
-        xfree(re_);
-        regfree(&compiled_re_);
-    }
+      public:
+        classifier_t()
+        {
+            results_[0] = false;
+            results_[1] = true;
+        }
+        ~classifier_t()
+        {
+            xfree(re_);
+            regfree(&compiled_re_);
+        }
 
-    bool set_regexp(const char *, bool);
-    void set_results(int failed, int matched)
-    {
-        results_[0] = failed;
-        results_[1] = matched;
-    }
-    int classify(const char *, char *, size_t) const;
-    const char *error_string() const;
+        bool set_regexp(const char *, bool);
+        void set_results(int failed, int matched)
+        {
+            results_[0] = failed;
+            results_[1] = matched;
+        }
+        int classify(const char *, char *, size_t) const;
+        const char *error_string() const;
 
-  private:
-    char *re_;
-    regex_t compiled_re_;
-    int results_[2];
-    int error_;
-};
+      private:
+        char *re_;
+        regex_t compiled_re_;
+        int results_[2];
+        int error_;
+    };
 
-// close the namespace
+    // close the namespace
 };
 
 #endif /* __NP_CLASSIFIER_H__ */

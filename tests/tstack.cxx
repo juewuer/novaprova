@@ -28,13 +28,13 @@ int vegan(int x)
 
 namespace umami
 {
-namespace pickled
-{
-int irony(int x)
-{
-    return vegan(x - 3);
-}
-};
+    namespace pickled
+    {
+        int irony(int x)
+        {
+            return vegan(x - 3);
+        }
+    };
 };
 
 class leggings

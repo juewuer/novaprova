@@ -23,50 +23,50 @@
 namespace np
 {
 
-class job_t : public np::util::zalloc
-{
-  public:
-    job_t(const plan_t::iterator&);
-    ~job_t();
-
-    std::string as_string() const;
-    testnode_t *get_node() const
+    class job_t : public np::util::zalloc
     {
-        return node_;
-    }
-    void pre_run(bool in_parent);
-    void post_run(bool in_parent);
+      public:
+        job_t(const plan_t::iterator&);
+        ~job_t();
 
-    int64_t get_start() const
-    {
-        return start_;
-    }
-    int64_t get_elapsed() const;
+        std::string as_string() const;
+        testnode_t *get_node() const
+        {
+            return node_;
+        }
+        void pre_run(bool in_parent);
+        void post_run(bool in_parent);
 
-    void set_stdout_path(const char *path)
-    {
-        stdout_path_ = std::string(path);
-    }
-    void set_stderr_path(const char *path)
-    {
-        stderr_path_ = std::string(path);
-    }
-    std::string get_stdout() const;
-    std::string get_stderr() const;
+        int64_t get_start() const
+        {
+            return start_;
+        }
+        int64_t get_elapsed() const;
 
-  private:
-    static unsigned int next_id_;
+        void set_stdout_path(const char *path)
+        {
+            stdout_path_ = std::string(path);
+        }
+        void set_stderr_path(const char *path)
+        {
+            stderr_path_ = std::string(path);
+        }
+        std::string get_stdout() const;
+        std::string get_stderr() const;
 
-    unsigned int id_;
-    testnode_t *node_;
-    std::vector<testnode_t::assignment_t> assigns_;
-    int64_t start_;
-    int64_t end_;
-    std::string stdout_path_;
-    std::string stderr_path_;
-};
+      private:
+        static unsigned int next_id_;
 
-// close the namespace
+        unsigned int id_;
+        testnode_t *node_;
+        std::vector<testnode_t::assignment_t> assigns_;
+        int64_t start_;
+        int64_t end_;
+        std::string stdout_path_;
+        std::string stderr_path_;
+    };
+
+    // close the namespace
 };
 
 #endif /* __NP_JOB_H__ */

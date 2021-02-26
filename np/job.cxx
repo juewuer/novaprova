@@ -19,118 +19,118 @@
 
 namespace np
 {
-using namespace std;
-using namespace np::util;
+    using namespace std;
+    using namespace np::util;
 
-unsigned int job_t::next_id_ = 1;
+    unsigned int job_t::next_id_ = 1;
 
-job_t::job_t(const plan_t::iterator& i)
-    :  id_(next_id_++),
-       node_(i.get_node()),
-       assigns_(i.get_assignments())
-{
-}
-
-job_t::~job_t()
-{
-    if (stdout_path_ != "")
-        unlink(stdout_path_.c_str());
-    if (stderr_path_ != "")
-        unlink(stderr_path_.c_str());
-}
-
-string job_t::as_string() const
-{
-    string s = node_->get_fullname();
-    vector<testnode_t::assignment_t>::const_iterator i;
-    for (i = assigns_.begin() ; i != assigns_.end() ; ++i)
-        s += string("[") + i->as_string() + "]";
-    return s;
-}
-
-void job_t::pre_run(bool in_parent)
-{
-    if (in_parent)
+    job_t::job_t(const plan_t::iterator& i)
+        :  id_(next_id_++),
+           node_(i.get_node()),
+           assigns_(i.get_assignments())
     {
-        start_ = rel_now();
-        return;
     }
 
-    vector<testnode_t::assignment_t>::const_iterator i;
-    for (i = assigns_.begin() ; i != assigns_.end() ; ++i)
-        i->apply();
-
-    node_->pre_run();
-}
-
-void job_t::post_run(bool in_parent)
-{
-    if (in_parent)
+    job_t::~job_t()
     {
-        end_ = rel_now();
-        return;
+        if (stdout_path_ != "")
+            unlink(stdout_path_.c_str());
+        if (stderr_path_ != "")
+            unlink(stderr_path_.c_str());
     }
 
-    node_->post_run();
-
-    vector<testnode_t::assignment_t>::const_iterator i;
-    for (i = assigns_.begin() ; i != assigns_.end() ; ++i)
-        i->unapply();
-}
-
-int64_t job_t::get_elapsed() const
-{
-    int64_t end = end_;
-    if (!end)
-        end = rel_now();
-    return end - start_;
-}
-
-static string get_file_contents(const string& path)
-{
-    struct stat sb;
-    int r;
-    int fd;
-    int remain;
-    char *b;
-    string buf;
-
-    fd = open(path.c_str(), O_RDONLY, 0);
-    if (fd < 0)
+    string job_t::as_string() const
     {
-        perror(path.c_str());
-        return string("");
+        string s = node_->get_fullname();
+        vector<testnode_t::assignment_t>::const_iterator i;
+        for (i = assigns_.begin() ; i != assigns_.end() ; ++i)
+            s += string("[") + i->as_string() + "]";
+        return s;
     }
 
-    r = fstat(fd, &sb);
-    if (r < 0)
+    void job_t::pre_run(bool in_parent)
     {
-        perror(path.c_str());
-        return string("");
-    }
-    buf.resize(sb.st_size);
+        if (in_parent)
+        {
+            start_ = rel_now();
+            return;
+        }
 
-    remain = sb.st_size;
-    b = (char *)buf.c_str();
-    while (remain > 0 && (r = read(fd, b, remain)) > 0)
+        vector<testnode_t::assignment_t>::const_iterator i;
+        for (i = assigns_.begin() ; i != assigns_.end() ; ++i)
+            i->apply();
+
+        node_->pre_run();
+    }
+
+    void job_t::post_run(bool in_parent)
     {
-        remain -= r;
-        b += r;
+        if (in_parent)
+        {
+            end_ = rel_now();
+            return;
+        }
+
+        node_->post_run();
+
+        vector<testnode_t::assignment_t>::const_iterator i;
+        for (i = assigns_.begin() ; i != assigns_.end() ; ++i)
+            i->unapply();
     }
 
-    close(fd);
-    return buf;
-}
+    int64_t job_t::get_elapsed() const
+    {
+        int64_t end = end_;
+        if (!end)
+            end = rel_now();
+        return end - start_;
+    }
 
-string job_t::get_stdout() const
-{
-    return get_file_contents(stdout_path_);
-}
+    static string get_file_contents(const string& path)
+    {
+        struct stat sb;
+        int r;
+        int fd;
+        int remain;
+        char *b;
+        string buf;
 
-string job_t::get_stderr() const
-{
-    return get_file_contents(stderr_path_);
-}
+        fd = open(path.c_str(), O_RDONLY, 0);
+        if (fd < 0)
+        {
+            perror(path.c_str());
+            return string("");
+        }
 
-// close the namespace
+        r = fstat(fd, &sb);
+        if (r < 0)
+        {
+            perror(path.c_str());
+            return string("");
+        }
+        buf.resize(sb.st_size);
+
+        remain = sb.st_size;
+        b = (char *)buf.c_str();
+        while (remain > 0 && (r = read(fd, b, remain)) > 0)
+        {
+            remain -= r;
+            b += r;
+        }
+
+        close(fd);
+        return buf;
+    }
+
+    string job_t::get_stdout() const
+    {
+        return get_file_contents(stdout_path_);
+    }
+
+    string job_t::get_stderr() const
+    {
+        return get_file_contents(stderr_path_);
+    }
+
+    // close the namespace
 };

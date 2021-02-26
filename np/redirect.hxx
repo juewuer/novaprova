@@ -23,26 +23,26 @@
 namespace np
 {
 
-class redirect_t : public spiegel::intercept_t
-{
-  public:
-    redirect_t(spiegel::addr_t from, const char *fromname, spiegel::addr_t to)
-        :  intercept_t(from, fromname),
-           to_(to)
-    {}
-    ~redirect_t() {}
-
-    void before(spiegel::call_t& call)
+    class redirect_t : public spiegel::intercept_t
     {
-        call.redirect(to_);
-    }
-    void after(spiegel::call_t& call __attribute__((unused))) {}
+      public:
+        redirect_t(spiegel::addr_t from, const char *fromname, spiegel::addr_t to)
+            :  intercept_t(from, fromname),
+               to_(to)
+        {}
+        ~redirect_t() {}
 
-  private:
-    spiegel::addr_t to_;
-};
+        void before(spiegel::call_t& call)
+        {
+            call.redirect(to_);
+        }
+        void after(spiegel::call_t& call __attribute__((unused))) {}
 
-// close the namespace
+      private:
+        spiegel::addr_t to_;
+    };
+
+    // close the namespace
 };
 
 #endif /* __NP_REDIRECT_H__ */
