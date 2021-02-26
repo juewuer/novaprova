@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <np.h>	    /* NovaProva library */
+#include <np.h>     /* NovaProva library */
 #include "mycode.h" /* declares the Code Under Test */
 
 void test_simple(void)

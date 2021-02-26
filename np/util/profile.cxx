@@ -40,18 +40,18 @@ namespace np
 
         void probe_t::log(const char *which)
         {
-            if (log_fd_ == -2)
+            if(log_fd_ == -2)
             {
                 static const char filename[] = "novaprova.profile.dat";
                 log_fd_ = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0666);
-                if (log_fd_ < 0)
+                if(log_fd_ < 0)
                 {
                     fprintf(stderr, "Cannot open %s for writing: %s\n",
                             filename, strerror(errno));
                 }
             }
 
-            if (log_fd_ >= 0)
+            if(log_fd_ >= 0)
             {
                 char line[512];
                 snprintf(line, sizeof(line), "%lld %d %d %s %s\n",

@@ -47,7 +47,7 @@ namespace np
 
             class x86_64_linux_call_t : public np::spiegel::call_t
             {
-              private:
+            private:
                 x86_64_linux_call_t() {}
 
                 unsigned long *regs_;
@@ -70,9 +70,9 @@ namespace np
                 friend unsigned long intercept_tramp(void);
             };
 
-#define INSN_PUSH_RBP	    0x55
-#define INSN_INT3	    0xcc
-#define INSN_HLT	    0xf4
+#define INSN_PUSH_RBP       0x55
+#define INSN_INT3       0xcc
+#define INSN_HLT        0xf4
 
             static ucontext_t tramp_uc;
             static ucontext_t fpuc;
@@ -95,7 +95,7 @@ namespace np
                     /* fake stack frame for the original function
                      *
                      *  - saved RBP (for intercept type PUSHBP only, the result of
-                     *		 the simulated push %rbp instruction).
+                     *       the simulated push %rbp instruction).
                      *  - return address
                      *  <arg0..arg5 passed in registers>
                      *  - arg6
@@ -125,8 +125,10 @@ namespace np
                  * instead generates a bogus address in the middle of the function!
                  * This was needlessly confusing.
                  */
-                if (hack1)
+                if(hack1)
+                {
                     goto after;
+                }
 
                 //     printf("intercept_tramp: starting, RA=%p\n", __builtin_return_address(0));
 
@@ -139,7 +141,7 @@ namespace np
                  * fpuc.uc_mcontect.fpregs which points to fpuc.__fpregs_mem.
                  */
                 memset(&fpuc, 0, sizeof(fpuc));
-                if (getcontext(&fpuc))
+                if(getcontext(&fpuc))
                 {
                     perror("getcontext");
                     exit(1);
@@ -197,7 +199,7 @@ namespace np
                  *
                  * "Trust me, I know what I'm doing."
                  */
-                switch (tramp_intstate->type_)
+                switch(tramp_intstate->type_)
                 {
                     case intstate_t::PUSHBP:
                         /* simulate the push %rbp insn which the breakpoint replaced */
@@ -247,14 +249,16 @@ namespace np
                 frame.call.stack_ = frame.stack + nstack;
                 frame.call.regs_ = (unsigned long *)tramp_uc.uc_mcontext.gregs;
                 intercept_t::dispatch_before(frame.addr, frame.call);
-                if (frame.call.skip_)
-                    return frame.call.retval_;	/* before() requested skip() */
-                if (frame.call.redirect_)
+                if(frame.call.skip_)
+                {
+                    return frame.call.retval_;    /* before() requested skip() */
+                }
+                if(frame.call.redirect_)
                 {
                     /* before() requested redirect, so setup the context to call
                      * that function instead. */
                     tramp_uc.uc_mcontext.gregs[REG_RIP] = frame.call.redirect_;
-                    switch (tramp_intstate->type_)
+                    switch(tramp_intstate->type_)
                     {
                         case intstate_t::PUSHBP:
                             /* The new function won't be intercepted (well, we hope not)
@@ -275,9 +279,9 @@ namespace np
 
                 /* switch to the ucontext */
                 //     printf("tramp: about to setcontext(RIP=0x%016lx RSP=0x%016lx RBP=0x%016lx)\n",
-                // 	   (unsigned long)tramp_uc.uc_mcontext.gregs[REG_RIP],
-                // 	   (unsigned long)tramp_uc.uc_mcontext.gregs[REG_RSP],
-                // 	   (unsigned long)tramp_uc.uc_mcontext.gregs[REG_RBP]);
+                //     (unsigned long)tramp_uc.uc_mcontext.gregs[REG_RIP],
+                //     (unsigned long)tramp_uc.uc_mcontext.gregs[REG_RSP],
+                //     (unsigned long)tramp_uc.uc_mcontext.gregs[REG_RBP]);
                 setcontext(&tramp_uc);
                 /* notreached - setcontext() should not return, unless setting
                  * the signal mask failed, which it doesn't */
@@ -305,7 +309,7 @@ after:
                  */
                 __asm__ volatile("movq %0, %%rsp" : : "m"(frame.our_rsp));
 
-                switch (tramp_intstate->type_)
+                switch(tramp_intstate->type_)
                 {
                     case intstate_t::PUSHBP:
                         /* we're cool */
@@ -334,42 +338,58 @@ after:
                 ucontext_t *uc = (ucontext_t *)vuc;
 
                 //     printf("handle_signal: signo=%d code=%d pid=%d RIP 0x%016lx RBP 0x%016lx RSP 0x%016lx\n",
-                // 	    si->si_signo,
-                // 	    si->si_code,
-                // 	    (int)si->si_pid,
-                // 	    (unsigned long)uc->uc_mcontext.gregs[REG_RIP],
-                // 	    (unsigned long)uc->uc_mcontext.gregs[REG_RBP],
-                // 	    (unsigned long)uc->uc_mcontext.gregs[REG_RSP]);
+                //      si->si_signo,
+                //      si->si_code,
+                //      (int)si->si_pid,
+                //      (unsigned long)uc->uc_mcontext.gregs[REG_RIP],
+                //      (unsigned long)uc->uc_mcontext.gregs[REG_RBP],
+                //      (unsigned long)uc->uc_mcontext.gregs[REG_RSP]);
 
                 /* double-check that this is not some spurious signal */
                 unsigned char *eip;
 
                 eip = (unsigned char *)(uc->uc_mcontext.gregs[REG_RIP]);
-                if (using_int3)
+                if(using_int3)
                 {
-                    if (sig != SIGTRAP || si->si_signo != SIGTRAP)
-                        return;	    /* we got a bogus signal, wtf? */
-                    if (si->si_code != SI_KERNEL /* natural */ &&
+                    if(sig != SIGTRAP || si->si_signo != SIGTRAP)
+                    {
+                        return;    /* we got a bogus signal, wtf? */
+                    }
+                    if(si->si_code != SI_KERNEL /* natural */ &&
                             si->si_code != TRAP_BRKPT /* via Valgrind */)
-                        goto wtf;	    /* this is the code we expect from HLT traps */
+                    {
+                        goto wtf;    /* this is the code we expect from HLT traps */
+                    }
                     eip--;
-                    if (*eip != INSN_INT3)
-                        goto wtf;	    /* not an INT3 */
+                    if(*eip != INSN_INT3)
+                    {
+                        goto wtf;    /* not an INT3 */
+                    }
                 }
                 else
                 {
-                    if (sig != SIGSEGV || si->si_signo != SIGSEGV)
-                        return;	    /* we got a bogus signal, wtf? */
-                    if (si->si_code != SI_KERNEL)
-                        goto wtf;	    /* this is the code we expect from HLT traps */
-                    if (*eip != INSN_HLT)
-                        goto wtf;	    /* not an HLT */
+                    if(sig != SIGSEGV || si->si_signo != SIGSEGV)
+                    {
+                        return;    /* we got a bogus signal, wtf? */
+                    }
+                    if(si->si_code != SI_KERNEL)
+                    {
+                        goto wtf;    /* this is the code we expect from HLT traps */
+                    }
+                    if(*eip != INSN_HLT)
+                    {
+                        goto wtf;    /* not an HLT */
+                    }
                 }
-                if (si->si_pid != 0)
-                    return;	    /* some process sent us SIGSEGV, wtf? */
+                if(si->si_pid != 0)
+                {
+                    return;    /* some process sent us SIGSEGV, wtf? */
+                }
                 tramp_intstate = intercept_t::get_intstate((np::spiegel::addr_t)eip);
-                if (!tramp_intstate)
-                    goto wtf;   /* not an installed intercept */
+                if(!tramp_intstate)
+                {
+                    goto wtf;    /* not an installed intercept */
+                }
 
                 //     printf("handle_signal: trap from intercept breakpoint\n");
                 /* stash the ucontext for the tramp */
@@ -392,11 +412,11 @@ wtf:
             }
 
 
-            int install_intercept(np::spiegel::addr_t addr, intstate_t& state, std::string& err)
+            int install_intercept(np::spiegel::addr_t addr, intstate_t &state, std::string &err)
             {
                 int r;
 
-                switch (*(unsigned char *)addr)
+                switch(*(unsigned char *)addr)
                 {
                     case INSN_PUSH_RBP:
                         /* non-leaf function, all is good */
@@ -413,23 +433,25 @@ wtf:
                 state.orig_ = *(unsigned char *)addr;
 
                 r = text_map_writable(addr, 1);
-                if (r)
+                if(r)
                 {
                     err = "cannot make text page writable";
                     return -1;
                 }
 
                 static bool installed_sigaction = false;
-                if (!installed_sigaction)
+                if(!installed_sigaction)
                 {
                     struct sigaction act;
                     memset(&act, 0, sizeof(act));
                     act.sa_sigaction = handle_signal;
                     act.sa_flags |= SA_SIGINFO;
-                    if (RUNNING_ON_VALGRIND)
+                    if(RUNNING_ON_VALGRIND)
+                    {
                         using_int3 = true;
+                    }
                     sigaction((using_int3 ? SIGTRAP : SIGSEGV), &act, NULL);
-                    if (r < 0)
+                    if(r < 0)
                     {
                         perror("np: sigaction");
                         err = "cannot install signal handler";
@@ -446,9 +468,9 @@ wtf:
                 return 0;
             }
 
-            int uninstall_intercept(np::spiegel::addr_t addr, intstate_t& state, std::string& err)
+            int uninstall_intercept(np::spiegel::addr_t addr, intstate_t &state, std::string &err)
             {
-                if (*(unsigned char *)addr != (using_int3 ? INSN_INT3 : INSN_HLT))
+                if(*(unsigned char *)addr != (using_int3 ? INSN_INT3 : INSN_HLT))
                 {
                     err = "intercept not installed";
                     return -1;
@@ -456,8 +478,10 @@ wtf:
                 *(unsigned char *)addr = state.orig_;
                 VALGRIND_DISCARD_TRANSLATIONS(addr, 1);
                 int r = text_restore(addr, 1);
-                if (r < 0)
+                if(r < 0)
+                {
                     err = "cannot restore text page";
+                }
                 return r;
             }
 

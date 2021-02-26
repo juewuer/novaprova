@@ -46,7 +46,7 @@ namespace np
         string nm = j->as_string();
 
         nrun_++;
-        switch (res)
+        switch(res)
         {
             case R_PASS:
                 fprintf(stderr, "PASS %s\n", nm.c_str());

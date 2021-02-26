@@ -31,7 +31,7 @@ namespace np
 
     testnode_t::~testnode_t()
     {
-        while (children_)
+        while(children_)
         {
             testnode_t *child = children_;
             children_ = child->next_;
@@ -49,19 +49,21 @@ namespace np
         testnode_t **tailp;
         tok_t tok(name.c_str(), "/");
 
-#if _NP_DEBUG
+        #if _NP_DEBUG
         fprintf(stderr, "np: testnode_t::make_path(%s)\n", name.c_str());
-#endif
-        while ((part = tok.next()))
+        #endif
+        while((part = tok.next()))
         {
-            for (child = parent->children_, tailp = &parent->children_ ;
+            for(child = parent->children_, tailp = &parent->children_ ;
                     child ;
                     tailp = &child->next_, child = child->next_)
             {
-                if (!strcmp(child->name_, part))
+                if(!strcmp(child->name_, part))
+                {
                     break;
+                }
             }
-            if (!child)
+            if(!child)
             {
                 child = new testnode_t(part);
                 *tailp = child;
@@ -75,7 +77,7 @@ namespace np
 
     void testnode_t::set_function(functype_t ft, np::spiegel::function_t *func)
     {
-        if (funcs_[ft])
+        if(funcs_[ft])
             fprintf(stderr, "np: WARNING: duplicate %s functions: "
                     "%s:%s and %s:%s\n",
                     as_string(ft),
@@ -84,7 +86,9 @@ namespace np
                     func->get_compile_unit()->get_absolute_path().c_str(),
                     func->get_name().c_str());
         else
+        {
             funcs_[ft] = func;
+        }
     }
 
     void testnode_t::add_mock(np::spiegel::function_t *target, np::spiegel::function_t *mock)
@@ -106,22 +110,24 @@ namespace np
 
     static void indent(int level)
     {
-        for (; level ; level--)
+        for(; level ; level--)
+        {
             fputs("    ", stderr);
+        }
     }
 
     void testnode_t::dump(int level) const
     {
         indent(level);
-        if (name_)
+        if(name_)
         {
             fprintf(stderr, "%s (full %s)\n",
                     name_, get_fullname().c_str());
         }
 
-        for (int type = 0 ; type < FT_NUM_SINGULAR ; type++)
+        for(int type = 0 ; type < FT_NUM_SINGULAR ; type++)
         {
-            if (funcs_[type])
+            if(funcs_[type])
             {
                 indent(level);
                 fprintf(stderr, "  %s=%s:%s\n",
@@ -131,20 +137,26 @@ namespace np
             }
         }
 
-        for (testnode_t *child = children_ ; child ; child = child->next_)
+        for(testnode_t *child = children_ ; child ; child = child->next_)
+        {
             child->dump(level + 1);
+        }
     }
 
     string testnode_t::get_fullname() const
     {
         string full = "";
 
-        for (const testnode_t *a = this ; a ; a = a->parent_)
+        for(const testnode_t *a = this ; a ; a = a->parent_)
         {
-            if (!a->name_)
+            if(!a->name_)
+            {
                 continue;
-            if (a != this)
+            }
+            if(a != this)
+            {
                 full = "." + full;
+            }
             full = a->name_ + full;
         }
 
@@ -154,17 +166,25 @@ namespace np
     bool testnode_t::is_elidable() const
     {
         /* nodes with mocks or other intercepts cannot be elided */
-        if (intercepts_.size() > 0)
+        if(intercepts_.size() > 0)
+        {
             return false;
+        }
         /* nodes with parameters cannot be elided */
-        if (parameters_.size() > 0)
+        if(parameters_.size() > 0)
+        {
             return false;
+        }
         /* nodes with tests or fixtures cannot be elided */
-        if (funcs_[FT_BEFORE] || funcs_[FT_TEST] || funcs_[FT_AFTER])
+        if(funcs_[FT_BEFORE] || funcs_[FT_TEST] || funcs_[FT_AFTER])
+        {
             return false;
+        }
         /* nodes with more than a single child cannot be elided */
-        if (children_ && children_->next_)
+        if(children_ && children_->next_)
+        {
             return false;
+        }
         return true;
     }
 
@@ -172,17 +192,19 @@ namespace np
     {
         testnode_t *tn;
 
-        for (tn = this ; tn->children_ && tn->is_elidable() ; tn = tn->children_)
+        for(tn = this ; tn->children_ && tn->is_elidable() ; tn = tn->children_)
             ;
         /* tn now points at the highest non-elidable node */
 
         /* corner case: we have exactly one test; give ourselves at least a
          * two-deep hierarchy so we don't see a sudden jump in naming when
          * adding the second test */
-        if (!tn->children_ && tn->parent_)
+        if(!tn->children_ && tn->parent_)
+        {
             tn = tn->parent_;
+        }
 
-        if (tn->parent_)
+        if(tn->parent_)
         {
             tn->parent_->children_ = 0;
             assert(!tn->next_);
@@ -198,28 +220,38 @@ namespace np
 
         /* Run FT_BEFORE from outermost in, and FT_AFTER
          * from innermost out */
-        for (const testnode_t *a = this ; a ; a = a->parent_)
+        for(const testnode_t *a = this ; a ; a = a->parent_)
         {
-            if (!a->funcs_[type])
+            if(!a->funcs_[type])
+            {
                 continue;
-            if (type == FT_BEFORE)
+            }
+            if(type == FT_BEFORE)
+            {
                 fixtures.push_front(a->funcs_[type]);
+            }
             else
+            {
                 fixtures.push_back(a->funcs_[type]);
+            }
         }
         return fixtures;
     }
 
     testnode_t *testnode_t::find(const char *nm)
     {
-        if (name_ && get_fullname() == nm)
+        if(name_ && get_fullname() == nm)
+        {
             return this;
+        }
 
-        for (testnode_t *child = children_ ; child ; child = child->next_)
+        for(testnode_t *child = children_ ; child ; child = child->next_)
         {
             testnode_t *found = child->find(nm);
-            if (found)
+            if(found)
+            {
                 return found;
+            }
         }
 
         return 0;
@@ -228,11 +260,13 @@ namespace np
     void testnode_t::pre_run() const
     {
         /* Install intercepts from innermost out */
-        for (const testnode_t *a = this ; a ; a = a->parent_)
+        for(const testnode_t *a = this ; a ; a = a->parent_)
         {
             vector<np::spiegel::intercept_t *>::const_iterator itr;
-            for (itr = a->intercepts_.begin() ; itr != a->intercepts_.end() ; ++itr)
+            for(itr = a->intercepts_.begin() ; itr != a->intercepts_.end() ; ++itr)
+            {
                 (*itr)->install();
+            }
         }
     }
 
@@ -245,16 +279,18 @@ namespace np
          * *does* matter for installation, as the install order will be the
          * execution order should any intercepts double up.
          */
-        for (const testnode_t *a = this ; a ; a = a->parent_)
+        for(const testnode_t *a = this ; a ; a = a->parent_)
         {
             vector<np::spiegel::intercept_t *>::const_iterator itr;
-            for (itr = a->intercepts_.begin() ; itr != a->intercepts_.end() ; ++itr)
+            for(itr = a->intercepts_.begin() ; itr != a->intercepts_.end() ; ++itr)
+            {
                 (*itr)->uninstall();
+            }
         }
 
         /* uninstall all dynamic intercepts installed by this test */
         vector<np::spiegel::intercept_t *>::const_iterator itr;
-        for (itr = dynamic_intercepts.begin() ; itr != dynamic_intercepts.end() ; ++itr)
+        for(itr = dynamic_intercepts.begin() ; itr != dynamic_intercepts.end() ; ++itr)
         {
             np::spiegel::intercept_t *ii = *itr;
             ii->uninstall();
@@ -263,23 +299,27 @@ namespace np
         dynamic_intercepts.clear();
     }
 
-    testnode_t::preorder_iterator& testnode_t::preorder_iterator::operator++()
+    testnode_t::preorder_iterator &testnode_t::preorder_iterator::operator++()
     {
-        if (node_->children_)
-            node_ = node_->children_;	    // down
-        else if (node_ != base_ && node_->next_)
-            node_ = node_->next_;		    // across
+        if(node_->children_)
+        {
+            node_ = node_->children_;    // down
+        }
+        else if(node_ != base_ && node_->next_)
+        {
+            node_ = node_->next_;    // across
+        }
         else
         {
             // up and across
-            for (;;)
+            for(;;)
             {
-                if (node_ == base_)
+                if(node_ == base_)
                 {
                     node_ = 0;
                     break;
                 }
-                if (node_->next_)
+                if(node_->next_)
                 {
                     node_ = node_->next_;
                     break;
@@ -299,16 +339,20 @@ namespace np
         /* TODO: need a split() function */
         np::util::tok_t valtok(vals, ", \t");
         const char *val;
-        while ((val = valtok.next()))
+        while((val = valtok.next()))
+        {
             values_.push_back(xstrdup(val));
+        }
     }
 
     testnode_t::parameter_t::~parameter_t()
     {
         xfree(name_);
         vector<char *>::iterator i;
-        for (i = values_.begin() ; i != values_.end() ; ++i)
+        for(i = values_.begin() ; i != values_.end() ; ++i)
+        {
             free(*i);
+        }
     }
 
     /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -332,30 +376,36 @@ namespace np
 
     // Bump the assignment vector to the next next value in order, clearing
     // the vector and returning true if we run off the end of the values.
-    bool bump(std::vector<testnode_t::assignment_t>& a)
+    bool bump(std::vector<testnode_t::assignment_t> &a)
     {
         vector<testnode_t::assignment_t>::iterator i;
-        for (i = a.begin() ; i != a.end() ; ++i)
+        for(i = a.begin() ; i != a.end() ; ++i)
         {
-            if (++i->idx_ < i->param_->values_.size())
+            if(++i->idx_ < i->param_->values_.size())
+            {
                 return false;
+            }
             i->idx_ = 0;
         }
         a.clear();
         return true;
     }
 
-    int operator==(const std::vector<testnode_t::assignment_t>& a,
-                   const std::vector<testnode_t::assignment_t>& b)
+    int operator==(const std::vector<testnode_t::assignment_t> &a,
+                   const std::vector<testnode_t::assignment_t> &b)
     {
-        if (a.size() != b.size())
+        if(a.size() != b.size())
+        {
             return 0;
+        }
 
         std::vector<testnode_t::assignment_t>::const_iterator ia;
         std::vector<testnode_t::assignment_t>::const_iterator ib;
-        for (ia = a.begin(), ib = b.begin() ; ia != a.end() ; ++ia, ++ib)
-            if (ia->idx_ != ib->idx_)
+        for(ia = a.begin(), ib = b.begin() ; ia != a.end() ; ++ia, ++ib)
+            if(ia->idx_ != ib->idx_)
+            {
                 return 0;
+            }
         return 1;
     }
 
@@ -370,11 +420,13 @@ namespace np
     {
         vector<assignment_t> assigns;
 
-        for (const testnode_t *a = this ; a ; a = a->parent_)
+        for(const testnode_t *a = this ; a ; a = a->parent_)
         {
             vector<parameter_t *>::const_iterator i;
-            for (i = a->parameters_.begin() ; i != a->parameters_.end() ; ++i)
+            for(i = a->parameters_.begin() ; i != a->parameters_.end() ; ++i)
+            {
                 assigns.push_back(assignment_t(*i));
+            }
         }
         return assigns;
     }
@@ -398,10 +450,10 @@ extern "C" void __np_mock(void (*from)(void), const char *name, void (*to)(void)
 extern "C" void __np_unmock(void (*from)(void))
 {
     std::vector<np::spiegel::intercept_t *>::iterator itr;
-    for (itr = dynamic_intercepts.begin() ; itr != dynamic_intercepts.end() ; ++itr)
+    for(itr = dynamic_intercepts.begin() ; itr != dynamic_intercepts.end() ; ++itr)
     {
         np::spiegel::intercept_t *ii = *itr;
-        if (ii->get_address() == (np::spiegel::addr_t)from)
+        if(ii->get_address() == (np::spiegel::addr_t)from)
         {
             dynamic_intercepts.erase(itr);
             ii->uninstall();

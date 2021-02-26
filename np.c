@@ -26,28 +26,34 @@ using namespace std;
 
 static void be_valground(void)
 {
-#if HAVE_VALGRIND
+    #if HAVE_VALGRIND
     const char *env;
     int argc;
     char **argv;
     const char **newargv;
     const char **p;
 
-    if (RUNNING_ON_VALGRIND)
+    if(RUNNING_ON_VALGRIND)
+    {
         return;
+    }
 
     env = getenv("NOVAPROVA_VALGRIND");
-    if (env && !strcmp(env, "no"))
+    if(env && !strcmp(env, "no"))
+    {
         return;
+    }
 
-    if (np::spiegel::platform::is_running_under_debugger())
+    if(np::spiegel::platform::is_running_under_debugger())
     {
         fprintf(stderr, "np: disabling Valgrind under debugger\n");
         return;
     }
 
-    if (!np::spiegel::platform::get_argv(&argc, &argv))
+    if(!np::spiegel::platform::get_argv(&argc, &argv))
+    {
         return;
+    }
 
     fprintf(stderr, "[%s] np: starting valgrind\n",
             np::util::rel_timestamp());
@@ -56,17 +62,19 @@ static void be_valground(void)
     *p++ = VALGRIND_BINARY;
     *p++ = "-q";
     *p++ = "--tool=memcheck";
-#ifdef _NP_VALGRIND_SUPPRESSION_FILE
+    #ifdef _NP_VALGRIND_SUPPRESSION_FILE
     *p++ = "--gen-suppressions=all";
     *p++ = "--suppressions=" _NP_VALGRIND_SUPPRESSION_FILE;
-#endif
-    while (*argv)
+    #endif
+    while(*argv)
+    {
         *p++ = *argv++;
+    }
 
     execv(newargv[0], (char *const *)newargv);
     perror(newargv[0]);
     exit(1);
-#endif
+    #endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -89,7 +97,7 @@ static void be_valground(void)
  * @c std::set_terminate() which handles any uncaught C++ exceptions,
  * generates a useful error message, and fails the running test.
  *
- * @return	a new runner object
+ * @return  a new runner object
  *
  * \ingroup main
  */

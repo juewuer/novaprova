@@ -20,10 +20,10 @@ namespace np
     using namespace std;
     using namespace np::util;
 
-    event_t& event_t::with_stack()
+    event_t &event_t::with_stack()
     {
         string trace = np::spiegel::describe_stacktrace();
-        if (trace.length())
+        if(trace.length())
         {
             /* only clobber `function' if we have something better */
             locflags &= ~LT__function;
@@ -53,27 +53,33 @@ namespace np
     void event_t::save_strings()
     {
         size_t len = 0;
-        if (description)
+        if(description)
+        {
             len += strlen(description) + 1;
-        if (filename)
+        }
+        if(filename)
+        {
             len += strlen(filename) + 1;
-        if (function && !(locflags & LT_SPIEGELFUNC))
+        }
+        if(function && !(locflags & LT_SPIEGELFUNC))
+        {
             len += strlen(function) + 1;
+        }
 
         char *p = freeme_ = (char *)np::util::xmalloc(len);
-        if (description)
+        if(description)
         {
             strcpy(p, description);
             description = p;
             p += strlen(p) + 1;
         }
-        if (filename)
+        if(filename)
         {
             strcpy(p, filename);
             filename = p;
             p += strlen(p) + 1;
         }
-        if (function && !(locflags & LT_SPIEGELFUNC))
+        if(function && !(locflags & LT_SPIEGELFUNC))
         {
             strcpy(p, function);
             function = p;
@@ -89,10 +95,12 @@ namespace np
         this->which = orig->which;
         this->description = xstr(orig->description);
 
-        if (orig->locflags & LT_FUNCTYPE)
+        if(orig->locflags & LT_FUNCTYPE)
+        {
             this->in_functype(orig->functype);
+        }
 
-        if (orig->locflags & LT_SPIEGELFUNC)
+        if(orig->locflags & LT_SPIEGELFUNC)
         {
             np::spiegel::function_t *f = (np::spiegel::function_t *)orig->function;
 
@@ -104,14 +112,20 @@ namespace np
         }
         else
         {
-            if ((orig->locflags & (LT_FILENAME | LT_LINENO)) == (LT_FILENAME | LT_LINENO))
+            if((orig->locflags & (LT_FILENAME | LT_LINENO)) == (LT_FILENAME | LT_LINENO))
+            {
                 this->at_line(xstr(orig->filename), orig->lineno);
-            else if (orig->locflags & LT_FILENAME)
+            }
+            else if(orig->locflags & LT_FILENAME)
+            {
                 this->in_file(xstr(orig->filename));
+            }
 
-            if (orig->locflags & LT_FUNCNAME)
+            if(orig->locflags & LT_FUNCNAME)
+            {
                 this->in_function(xstr(orig->function));
-            if (orig->locflags & LT_STACK)
+            }
+            if(orig->locflags & LT_STACK)
             {
                 this->locflags |= LT_STACK;
                 this->function = xstr(orig->function);
@@ -121,7 +135,7 @@ namespace np
 
     result_t event_t::get_result() const
     {
-        switch (which)
+        switch(which)
         {
             case EV_ASSERT:
             case EV_EXIT:
@@ -170,21 +184,25 @@ namespace np
     {
         string s = "";
 
-        if (locflags & LT_FILENAME)
+        if(locflags & LT_FILENAME)
         {
             s += " at ";
             s += filename;
             s += ":";
-            if (locflags & LT_LINENO)
+            if(locflags & LT_LINENO)
+            {
                 s += dec(lineno);
+            }
             else
+            {
                 s += "???";
+            }
         }
 
-        if (locflags & LT_FUNCNAME)
+        if(locflags & LT_FUNCNAME)
         {
             s += " in ";
-            if (locflags & LT_FUNCTYPE)
+            if(locflags & LT_FUNCTYPE)
             {
                 s += "(";
                 s += np::as_string((functype_t)functype);
@@ -198,11 +216,13 @@ namespace np
 
     string event_t::get_long_location() const
     {
-        if (locflags & LT_STACK)
+        if(locflags & LT_STACK)
         {
             string s = "";
-            if ((locflags & (LT_FILENAME | LT_LINENO)) == (LT_FILENAME | LT_LINENO))
+            if((locflags & (LT_FILENAME | LT_LINENO)) == (LT_FILENAME | LT_LINENO))
+            {
                 s = get_short_location() + "\n";
+            }
             return s + string(function);
         }
         return get_short_location() + "\n";

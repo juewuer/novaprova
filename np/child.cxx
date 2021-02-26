@@ -40,27 +40,29 @@ namespace np
 
     void child_t::handle_input()
     {
-#if _NP_DEBUG
+        #if _NP_DEBUG
         fprintf(stderr, "np: [%s] pid %d job %s handle_input() state=%d\n",
                 np::util::rel_timestamp(), (int)pid_, job_->as_string().c_str(), (int)state_);
-#endif
-        if (state_ == FINISHED)
-            return;
-        if (!proxy_listener_t::handle_call(event_pipe_, job_, &result_))
+        #endif
+        if(state_ == FINISHED)
         {
-#if _NP_DEBUG
+            return;
+        }
+        if(!proxy_listener_t::handle_call(event_pipe_, job_, &result_))
+        {
+            #if _NP_DEBUG
             fprintf(stderr, "np: child now finished\n");
-#endif
+            #endif
             state_ = FINISHED;
         }
     }
 
     void child_t::handle_timeout(int64_t end)
     {
-        switch (state_)
+        switch(state_)
         {
             case RUNNING:
-                if (deadline_ <= end)
+                if(deadline_ <= end)
                 {
                     static char buf[80];
                     snprintf(buf, sizeof(buf), "Child process %d timed out, killing", (int)pid_);

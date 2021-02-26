@@ -31,15 +31,17 @@ namespace np
             int flags = MAP_SHARED;
 
             void *map = ::mmap(NULL, size_, prot, flags, fd, offset_);
-            if (map == MAP_FAILED)
+            if(map == MAP_FAILED)
+            {
                 return -errno;
+            }
             map_ = map;
             return 0;
         }
 
         int mapping_t::munmap()
         {
-            if (map_)
+            if(map_)
             {
                 ::munmap(map_, size_);
                 map_ = NULL;

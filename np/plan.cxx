@@ -41,11 +41,13 @@ namespace np
         testnode_t *tn;
         int i;
 
-        for (i = 0 ; i < nspec ; i++)
+        for(i = 0 ; i < nspec ; i++)
         {
             tn = testmanager_t::instance()->find_node(specs[i]);
-            if (!tn)
+            if(!tn)
+            {
                 return false;
+            }
             add_node(tn);
         }
         return true;
@@ -58,18 +60,20 @@ namespace np
         :  vitr_(first),
            vend_(last)
     {
-        if (vitr_ != vend_)
+        if(vitr_ != vend_)
         {
             nitr_ = *vitr_;
             find_testable_node();
         }
     }
 
-    plan_t::iterator& plan_t::iterator::operator++()
+    plan_t::iterator &plan_t::iterator::operator++()
     {
         // walk to the next assignment state
-        if (!bump(assigns_))
+        if(!bump(assigns_))
+        {
             return *this;
+        }
         assigns_.clear();
 
         // no more assignment states: walk to the next node
@@ -83,20 +87,22 @@ namespace np
     // current state, which has a test function
     void plan_t::iterator::find_testable_node()
     {
-        for (;;)
+        for(;;)
         {
-            if (nitr_ == (*vitr_)->preorder_end())
+            if(nitr_ == (*vitr_)->preorder_end())
             {
                 // no more nodes in this subtree: walk to the
                 // next subtree in the vector
                 ++vitr_;
-                if (vitr_ == vend_)
-                    return;	    // end of iteration
+                if(vitr_ == vend_)
+                {
+                    return;    // end of iteration
+                }
             }
-            if ((*nitr_)->get_function(FT_TEST))
+            if((*nitr_)->get_function(FT_TEST))
             {
                 assigns_ = (*nitr_)->create_assignments();
-                return;		    // found a node
+                return;         // found a node
             }
             ++nitr_;
         }
@@ -107,7 +113,7 @@ namespace np
     /**
      * Create a new plan object.
      *
-     * @return	a new plan object
+     * @return  a new plan object
      *
      * A plan object can be used to configure a @c np_runner_t object to run
      * (or list to stdout) a subset of all the discovered tests.  Note that
@@ -123,7 +129,7 @@ namespace np
 
     /**
      * Destroys a plan object.
-     * @param plan	    the plan object to destroy
+     * @param plan      the plan object to destroy
      *
      * \ingroup main
      */
@@ -141,10 +147,10 @@ namespace np
      * options have been parsed with @c getopt.  Alternately you can call
      * @c np_plan_add_specs multiple times.
      *
-     * @param plan	    the plan object
-     * @param nspec	    number of specification strings
-     * @param spec	    array of specification strings
-     * @return	    false if any of the test specifications could not be found, true on success.
+     * @param plan      the plan object
+     * @param nspec     number of specification strings
+     * @param spec      array of specification strings
+     * @return      false if any of the test specifications could not be found, true on success.
      *
      * \ingroup main
      */

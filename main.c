@@ -45,18 +45,22 @@ int main(int argc, char **argv)
     };
 
     /* Parse arguments */
-    while ((c = getopt_long(argc, argv, "f:j:l", opts, NULL)) >= 0)
+    while((c = getopt_long(argc, argv, "f:j:l", opts, NULL)) >= 0)
     {
-        switch (c)
+        switch(c)
         {
             case 'f':
                 output_formats = optarg;
                 break;
             case 'j':
-                if (!strcasecmp(optarg, "max"))
+                if(!strcasecmp(optarg, "max"))
+                {
                     concurrency = 0;
-                else if ((concurrency = atoi(optarg)) <= 0)
+                }
+                else if((concurrency = atoi(optarg)) <= 0)
+                {
                     usage(argv[0]);
+                }
                 break;
             case 'l':
                 mode = LIST;
@@ -65,7 +69,7 @@ int main(int argc, char **argv)
                 usage(argv[0]);
         }
     }
-    if (optind < argc)
+    if(optind < argc)
     {
         /* Some tests were specified on the commandline */
         plan = np_plan_new();
@@ -75,22 +79,22 @@ int main(int argc, char **argv)
     /* Initialise the NovaProva library */
     runner = np_init();
 
-    switch (mode)
+    switch(mode)
     {
-        case LIST:	    /* List the specified (or all the discovered) tests */
+        case LIST:      /* List the specified (or all the discovered) tests */
             np_list_tests(runner, plan);
             break;
 
         case UNKNOWN:
-        case RUN:	    /* Run the specified (or all the discovered) tests */
+        case RUN:       /* Run the specified (or all the discovered) tests */
             /* Set the output format */
-            if (output_formats)
+            if(output_formats)
             {
                 const char *format;
                 np::util::tok_t tok(output_formats, ",");
-                while ((format = tok.next()))
+                while((format = tok.next()))
                 {
-                    if (!np_set_output_format(runner, format))
+                    if(!np_set_output_format(runner, format))
                     {
                         fprintf(stderr, "np: unknown output format '%s'\n", output_formats);
                         exit(1);
@@ -99,8 +103,10 @@ int main(int argc, char **argv)
             }
 
             /* Set how many tests will be run in parallel */
-            if (concurrency >= 0)
+            if(concurrency >= 0)
+            {
                 np_set_concurrency(runner, concurrency);
+            }
 
             /* Run the specified tests */
             ec = np_run_tests(runner, plan);
@@ -108,8 +114,10 @@ int main(int argc, char **argv)
     }
 
     /* Shut down the NovaProva library */
-    if (plan)
+    if(plan)
+    {
         np_plan_delete(plan);
+    }
     np_done(runner);
 
     exit(ec);

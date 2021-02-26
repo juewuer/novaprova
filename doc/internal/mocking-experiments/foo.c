@@ -26,9 +26,11 @@ static void handle_sigtrap(int sig, siginfo_t *si, void *vuc)
            si->si_code);
     // it turns out that neither si_pid nor si_address are meaningful
     // for SIGTRAP
-    if (si->si_signo != SIGTRAP ||
+    if(si->si_signo != SIGTRAP ||
             si->si_code != SI_KERNEL)
+    {
         return;
+    }
     printf("handle_sigtrap: faulted at EIP 0x%08lx ESP 0x%08lx\n",
            (unsigned long)uc->uc_mcontext.gregs[REG_EIP],
            (unsigned long)uc->uc_mcontext.gregs[REG_ESP]);

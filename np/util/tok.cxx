@@ -52,18 +52,22 @@ namespace np
 
         tok_t::~tok_t()
         {
-            if (buf_is_ours_)
+            if(buf_is_ours_)
+            {
                 free(buf_);
+            }
         }
 
         /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
         const char *tok_t::next()
         {
-            if (!buf_)
+            if(!buf_)
+            {
                 return 0;
+            }
 
-            if (first_)
+            if(first_)
             {
                 first_ = false;
                 return strtok_r(buf_, sep_, &state_);

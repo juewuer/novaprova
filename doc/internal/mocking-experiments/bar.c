@@ -31,17 +31,23 @@ static void handle_sigtrap(int sig, siginfo_t *si, void *vuc)
            si->si_code);
     // it turns out that neither si_pid nor si_address are meaningful
     // for SIGTRAP
-    if (si->si_signo != SIGTRAP)
+    if(si->si_signo != SIGTRAP)
+    {
         return;
+    }
     //     if (si->si_code != SI_KERNEL)
-    // 	return;
+    //  return;
     printf("handle_sigtrap: faulted at EIP 0x%08lx ESP 0x%08lx\n",
            (unsigned long)uc->uc_mcontext.gregs[REG_EIP],
            (unsigned long)uc->uc_mcontext.gregs[REG_ESP]);
-    if (got_sigtrap < 5)
+    if(got_sigtrap < 5)
+    {
         uc->uc_mcontext.gregs[REG_EFL] |= 0x100;    /* TF Trace Flag */
+    }
     else
+    {
         uc->uc_mcontext.gregs[REG_EFL] &= ~0x100;    /* TF Trace Flag */
+    }
     got_sigtrap++;
 }
 
@@ -50,7 +56,7 @@ int the_function(int x, int y)
     int i;
 
     __asm__ volatile("int3;");
-    for (i = 0 ; i < x ; i++)
+    for(i = 0 ; i < x ; i++)
     {
         y *= 5;
         y--;

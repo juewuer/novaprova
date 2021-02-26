@@ -21,7 +21,7 @@ static void test_slow(void)
 {
     int i;
     fprintf(stderr, "Test runs for 100 seconds\n");
-    for (i = 0 ; i < 100 ; i += 10)
+    for(i = 0 ; i < 100 ; i += 10)
     {
         fprintf(stderr, "Have been running for %d sec\n", i);
         sleep(10);

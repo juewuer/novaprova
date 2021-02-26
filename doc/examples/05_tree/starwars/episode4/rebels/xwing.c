@@ -15,7 +15,7 @@
  */
 
 #include <stdio.h>
-#include <np.h>	    /* NovaProva library */
+#include <np.h>     /* NovaProva library */
 
 static void test_lasers(void)
 {

@@ -61,7 +61,7 @@ namespace np
     static void add_slmatch(const char *re, sldisposition_t dis, int tag)
     {
         slmatch_t *slm = new slmatch_t(dis, tag);
-        if (!slm->classifier_.set_regexp(re, false))
+        if(!slm->classifier_.set_regexp(re, false))
         {
             const char *msg = slm->classifier_.error_string();
             delete slm;
@@ -96,18 +96,18 @@ namespace np
         int nmatches = 0;
 
         vector<slmatch_t *>::iterator i;
-        for (i = slmatches.begin() ; i != slmatches.end() ; ++i)
+        for(i = slmatches.begin() ; i != slmatches.end() ; ++i)
         {
             slmatch_t *slm = *i;
 
-            if (tag < 0 || slm->tag_ == tag)
+            if(tag < 0 || slm->tag_ == tag)
             {
                 count += slm->count_;
                 nmatches++;
             }
         }
 
-        if (!nmatches)
+        if(!nmatches)
         {
             static char buf[64];
             snprintf(buf, sizeof(buf), "Unmatched syslog tag %d", tag);
@@ -122,14 +122,14 @@ namespace np
         sldisposition_t mostdis = SL_UNKNOWN;
 
         vector<slmatch_t *>::iterator i;
-        for (i = slmatches.begin() ; i != slmatches.end() ; ++i)
+        for(i = slmatches.begin() ; i != slmatches.end() ; ++i)
         {
             slmatch_t *slm = *i;
             sldisposition_t dis = (sldisposition_t)slm->classifier_.classify(*msgp, 0, 0);
-            if (dis != SL_UNKNOWN)
+            if(dis != SL_UNKNOWN)
             {
                 /* found */
-                if (!most || dis > mostdis)
+                if(!most || dis > mostdis)
                 {
                     most = slm;
                     mostdis = dis;
@@ -137,10 +137,14 @@ namespace np
             }
         }
 
-        if (!most)
+        if(!most)
+        {
             return SL_FAIL;
-        if (mostdis == SL_COUNT)
+        }
+        if(mostdis == SL_COUNT)
+        {
             most->count_++;
+        }
         return mostdis;
     }
 
@@ -159,10 +163,12 @@ namespace np
         static char buf[32];
 
         prio &= LOG_PRIMASK;
-        for (c = prioritynames ; c->c_name ; c++)
+        for(c = prioritynames ; c->c_name ; c++)
         {
-            if (prio == c->c_val)
+            if(prio == c->c_val)
+            {
                 return c->c_name;
+            }
         }
 
         snprintf(buf, sizeof(buf), "%d", prio);
@@ -182,13 +188,15 @@ namespace np
         strcat(buf, ": ");
         vsnprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),
                   fmt, args);
-        for (p = buf + strlen(buf) - 1 ; p > buf && isspace(*p) ; p--)
+        for(p = buf + strlen(buf) - 1 ; p > buf && isspace(*p) ; p--)
+        {
             *p = '\0';
+        }
 
         return buf;
     }
 
-#if defined(__GLIBC__)
+    #if defined(__GLIBC__)
     /* Under some but not all combinations of options, glibc
      * defines syslog() as an inline that calls this function */
     extern "C" void __syslog_chk(int prio,
@@ -205,7 +213,7 @@ namespace np
         msg = vlogmsg(prio, fmt, args);
         va_end(args);
 
-        switch (find_slmatch(&msg))
+        switch(find_slmatch(&msg))
         {
             case SL_FAIL:
                 np_throw(event_t(EV_SLMATCH, msg).with_stack());
@@ -218,7 +226,7 @@ namespace np
                 break;
         }
     }
-#endif
+    #endif
 
     static void mock_syslog(int prio, const char *fmt, ...)
     {
@@ -229,7 +237,7 @@ namespace np
         msg = vlogmsg(prio, fmt, args);
         va_end(args);
 
-        switch (find_slmatch(&msg))
+        switch(find_slmatch(&msg))
         {
             case SL_FAIL:
                 np_throw(event_t(EV_SLMATCH, msg).with_stack());
@@ -248,11 +256,11 @@ namespace np
         tn->add_mock((np::spiegel::addr_t)&syslog,
                      "syslog",
                      (np::spiegel::addr_t)&mock_syslog);
-#if defined(__GLIBC__)
+        #if defined(__GLIBC__)
         tn->add_mock((np::spiegel::addr_t)&__syslog_chk,
                      "__syslog_chk",
                      (np::spiegel::addr_t)&mock___syslog_chk);
-#endif
+        #endif
     }
 
     // close the namespace

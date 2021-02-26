@@ -18,7 +18,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <malloc.h>
-#include <np.h>	    /* NovaProva library */
+#include <np.h>     /* NovaProva library */
 
 static char *str;
 

@@ -46,7 +46,7 @@ namespace np
             using namespace std;
             using namespace np::util;
 
-#if 0
+            #if 0
             /* This trick doesn't seem to work on 64b Linux, which
              * is confusing, but whatever */
             extern char **environ;
@@ -58,7 +58,7 @@ namespace np
 
                 /* This early, environ[] points at the area
                  * above argv[], so walk down from there */
-                for (p = environ - 2, n = 1;
+                for(p = environ - 2, n = 1;
                         ((int *)p)[-1] != n ;
                         --p, ++n)
                     ;
@@ -66,18 +66,18 @@ namespace np
                 *argvp = p;
                 return true;
             }
-#else
+            #else
             bool get_argv(int *argcp, char ***argvp)
             {
                 char **p;
 
-                for (p = _dl_argv ; *p ; p++)
+                for(p = _dl_argv ; *p ; p++)
                     ;
                 *argcp = (p - _dl_argv);
                 *argvp = _dl_argv;
                 return true;
             }
-#endif
+            #endif
 
             char *self_exe()
             {
@@ -94,7 +94,7 @@ namespace np
                 char buf[PATH_MAX];
                 static const char filename[] = "/proc/self/exe";
                 int r = readlink(filename, buf, sizeof(buf) - 1);
-                if (r < 0)
+                if(r < 0)
                 {
                     perror(filename);
                     return 0;
@@ -113,14 +113,14 @@ namespace np
                 snprintf(buf, sizeof(buf), "/proc/%u/cmdline", (unsigned)pid);
 
                 FILE *fp = fopen(buf, "r");
-                if (!fp)
+                if(!fp)
                 {
                     perror(buf);
                     return 0;
                 }
 
                 int r = fread(buf, 1, sizeof(buf) - 1, fp);
-                if (r <= 0)
+                if(r <= 0)
                 {
                     perror("read");
                     fclose(fp);
@@ -136,37 +136,45 @@ namespace np
             }
 
             static int add_one_linkobj(struct dl_phdr_info *info,
-                                       size_t size __attribute__((unused)),	// sizeof(*info)
+                                       size_t size __attribute__((unused)), // sizeof(*info)
                                        void *closure)
             {
                 vector<linkobj_t> *vec = (vector<linkobj_t> *)closure;
 
                 const char *name = info->dlpi_name;
-                if (name && !*name)
+                if(name && !*name)
+                {
                     name = NULL;
+                }
 
-                if (!name && info->dlpi_addr)
+                if(!name && info->dlpi_addr)
+                {
                     return 0;
-                if (!info->dlpi_phnum)
+                }
+                if(!info->dlpi_phnum)
+                {
                     return 0;
+                }
 
-#if 0
+                #if 0
                 fprintf(stderr, "dl_phdr_info { addr=%p name=%s }\n",
                         (void *)info->dlpi_addr, info->dlpi_name);
-#endif
+                #endif
 
                 linkobj_t lo;
                 lo.name = name;
 
-                for (int i = 0 ; i < info->dlpi_phnum ; i++)
+                for(int i = 0 ; i < info->dlpi_phnum ; i++)
                 {
-                    if (!info->dlpi_phdr[i].p_memsz)
+                    if(!info->dlpi_phdr[i].p_memsz)
+                    {
                         continue;
+                    }
 
                     const ElfW(Phdr) *ph = &info->dlpi_phdr[i];
                     lo.mappings.push_back(mapping_t(
-                                              (unsigned long)ph->p_offset, (unsigned long)ph->p_memsz,
-                                              (void *)((unsigned long)info->dlpi_addr + ph->p_vaddr)));
+                                                          (unsigned long)ph->p_offset, (unsigned long)ph->p_memsz,
+                                                          (void *)((unsigned long)info->dlpi_addr + ph->p_vaddr)));
                 }
                 vec->push_back(lo);
 
@@ -182,7 +190,7 @@ namespace np
 
             static vector<np::spiegel::mapping_t> plts;
 
-            void add_plt(const np::spiegel::mapping_t& m)
+            void add_plt(const np::spiegel::mapping_t &m)
             {
                 plts.push_back(m);
             }
@@ -190,23 +198,27 @@ namespace np
             static bool is_in_plt(np::spiegel::addr_t addr)
             {
                 vector<np::spiegel::mapping_t>::const_iterator i;
-                for (i = plts.begin() ; i != plts.end() ; ++i)
+                for(i = plts.begin() ; i != plts.end() ; ++i)
                 {
-                    if (i->contains((void *)addr))
+                    if(i->contains((void *)addr))
+                    {
                         return true;
+                    }
                 }
                 return false;
             }
 
             np::spiegel::addr_t normalise_address(np::spiegel::addr_t addr)
             {
-                if (is_in_plt(addr))
+                if(is_in_plt(addr))
                 {
                     Dl_info info;
                     memset(&info, 0, sizeof(info));
                     int r = dladdr((void *)addr, &info);
-                    if (r)
+                    if(r)
+                    {
                         return (np::spiegel::addr_t)dlsym(RTLD_NEXT, info.dli_sname);
+                    }
                 }
                 return addr;
             }
@@ -236,13 +248,17 @@ namespace np
                 int r;
 
                 /* increment the reference counts on every page we hit */
-                for (a = start ; a < end ; a += page_size())
+                for(a = start ; a < end ; a += page_size())
                 {
                     map<addr_t, unsigned int>::iterator itr = pagerefs.find(a);
-                    if (itr == pagerefs.end())
+                    if(itr == pagerefs.end())
+                    {
                         pagerefs[a] = 1;
+                    }
                     else
+                    {
                         itr->second++;
+                    }
                 }
 
                 /* actually change the underlying mapping in one
@@ -250,7 +266,7 @@ namespace np
                 r = mprotect((void *)start,
                              (size_t)(end - start),
                              PROT_READ | PROT_WRITE | PROT_EXEC);
-                if (r)
+                if(r)
                 {
                     perror("np: mprotect");
                     return -1;
@@ -266,18 +282,22 @@ namespace np
                 int r;
 
                 /* decrement the reference counts on every page we hit */
-                for (a = start ; a < end ; a += page_size())
+                for(a = start ; a < end ; a += page_size())
                 {
                     map<addr_t, unsigned int>::iterator itr = pagerefs.find(a);
-                    if (itr == pagerefs.end())
+                    if(itr == pagerefs.end())
+                    {
                         continue;
-                    if (--itr->second)
-                        continue;	/* still other references */
+                    }
+                    if(--itr->second)
+                    {
+                        continue;    /* still other references */
+                    }
                     pagerefs.erase(itr);
 
                     /* change the underlying mapping one page at a time */
                     r = mprotect((void *)a, (size_t)page_size(), PROT_READ | PROT_EXEC);
-                    if (r)
+                    if(r)
                     {
                         perror("np: mprotect");
                         return -1;
@@ -289,8 +309,8 @@ namespace np
 
             /* This trick doesn't work - Valgrind actively prevents
              * the simulated program from hijacking it's log fd */
-#if 0
-            if (RUNNING_ON_VALGRIND)
+            #if 0
+            if(RUNNING_ON_VALGRIND)
             {
                 /* ok, this is cheating */
                 int old_stderr = -1;
@@ -299,8 +319,10 @@ namespace np
 
                 strncpy(buf, "/tmp/spiegel-stack-XXXXXX", maxlen);
                 fd = mkstemp(buf);
-                if (fd < 0)
+                if(fd < 0)
+                {
                     return -errno;
+                }
                 unlink(buf);
 
                 old_stderr = dup(STDERR_FILENO);
@@ -311,7 +333,7 @@ namespace np
 
                 lseek(STDERR_FILENO, 0, SEEK_SET);
                 r = read(STDERR_FILENO, buf, sizeof(buf) - 1);
-                if (r < 0)
+                if(r < 0)
                 {
                     r = -errno;
                     goto out;
@@ -319,14 +341,14 @@ namespace np
                 buf[r] = '\0';
                 r = 0;
 out:
-                if (old_stderr > 0)
+                if(old_stderr > 0)
                 {
                     dup2(old_stderr, STDERR_FILENO);
                     close(old_stderr);
                 }
                 return r;
             }
-#endif
+            #endif
 
             vector<np::spiegel::addr_t> get_stacktrace()
             {
@@ -344,21 +366,27 @@ out:
                 unsigned long bp;
                 vector<np::spiegel::addr_t> stack;
 
-#if _NP_ADDRSIZE == 4
+                #if _NP_ADDRSIZE == 4
                 __asm__ volatile("movl %%ebp, %0" : "=r"(bp));
-#else
+                #else
                 __asm__ volatile("movq %%rbp, %0" : "=r"(bp));
-#endif
-                for (;;)
+                #endif
+                for(;;)
                 {
                     stack.push_back(((unsigned long *)bp)[1] - _NP_ADDRSIZE - 1);
                     unsigned long nextbp = ((unsigned long *)bp)[0];
-                    if (!nextbp)
+                    if(!nextbp)
+                    {
                         break;
-                    if (nextbp < bp)
-                        break;	// moving in the wrong direction
-                    if ((nextbp - bp) > 16384)
-                        break;	// moving a heuristic "too far"
+                    }
+                    if(nextbp < bp)
+                    {
+                        break;    // moving in the wrong direction
+                    }
+                    if((nextbp - bp) > 16384)
+                    {
+                        break;    // moving a heuristic "too far"
+                    }
                     bp = nextbp;
                 };
                 return stack;
@@ -375,22 +403,26 @@ out:
                 char buf[1024];
 
                 fp = fopen(procfile, "r");
-                if (!fp)
+                if(!fp)
                 {
                     /* most probable cause is that /proc is not mounted */
                     perror(procfile);
                     return -1;
                 }
 
-                while (fgets(buf, sizeof(buf), fp))
+                while(fgets(buf, sizeof(buf), fp))
                 {
                     tok_t tok(buf);
                     p = tok.next();
-                    if (!p || strcmp(p, "TracerPid:"))
+                    if(!p || strcmp(p, "TracerPid:"))
+                    {
                         continue;
+                    }
                     p = tok.next();
-                    if (p)
+                    if(p)
+                    {
                         pid = strtoul(p, NULL, 10);
+                    }
                     break;
                 }
 
@@ -408,14 +440,20 @@ out:
                 char *command;
 
                 // Valgrind doesn't play well with debuggers
-                if (RUNNING_ON_VALGRIND)
+                if(RUNNING_ON_VALGRIND)
+                {
                     return false;
+                }
 
                 tracer = get_tracer_pid();
-                if (tracer < 0)
-                    return false;	    /* no way to tell...so guess */
-                if (!tracer)
-                    return false;	/* not being ptrace()d */
+                if(tracer < 0)
+                {
+                    return false;    /* no way to tell...so guess */
+                }
+                if(!tracer)
+                {
+                    return false;    /* not being ptrace()d */
+                }
 
                 // We know we're being ptrace()d, but that could mean either that
                 // we're being debugged or strace()d.  In the latter case we don't
@@ -426,7 +464,7 @@ out:
                 // time will tell.  Note that we choose cmdline because it's
                 // commonly readable even when the 'exe' symlink isn't.
                 command = get_exe_by_pid(tracer);
-                if (!command)
+                if(!command)
                 {
                     // can't tell for sure, but given we're definitely ptraced,
                     // let's guess that it's a debugger doing it
@@ -435,15 +473,19 @@ out:
 
                 // find the filename
                 tail = strrchr(command, '/');
-                if (tail)
+                if(tail)
+                {
                     tail++;
+                }
                 else
+                {
                     tail = command;
+                }
 
                 // compare against the whitelist
-                for (i = 0 ; debuggers[i] ; i++)
+                for(i = 0 ; debuggers[i] ; i++)
                 {
-                    if (!strcmp(tail, debuggers[i]))
+                    if(!strcmp(tail, debuggers[i]))
                     {
                         fprintf(stderr, "np: being debugged by %s\n", command);
                         free(command);
@@ -469,20 +511,24 @@ out:
                 char buf[PATH_MAX];
 
                 dir = opendir(dirpath.c_str());
-                if (dir)
+                if(dir)
                 {
-                    while ((de = readdir(dir)))
+                    while((de = readdir(dir)))
                     {
-                        if (!isdigit(de->d_name[0]))
+                        if(!isdigit(de->d_name[0]))
+                        {
                             continue;
+                        }
 
                         fd = atoi(de->d_name);
-                        if (fd == dirfd(dir))
+                        if(fd == dirfd(dir))
+                        {
                             continue;
+                        }
 
                         filepath = dirpath + string("/") + string(de->d_name);
                         r = readlink(filepath.c_str(), buf, sizeof(buf) - 1);
-                        if (r < 0)
+                        if(r < 0)
                         {
                             perror(filepath.c_str());
                             continue;
@@ -492,12 +538,16 @@ out:
                         // Silently ignore named pipes to and from
                         // Valgrind's built-in gdbserver.
                         char *tail = strrchr(buf, '/');
-                        if (tail && !strncmp(tail, "/vgdb-pipe", 10))
+                        if(tail && !strncmp(tail, "/vgdb-pipe", 10))
+                        {
                             continue;
+                        }
 
                         // STL is just so screwed
-                        if (fd >= (int)fds.size())
+                        if(fd >= (int)fds.size())
+                        {
                             fds.resize(fd + 1);
+                        }
                         fds[fd] = string(buf);
                     }
                     closedir(dir);
@@ -517,15 +567,19 @@ out:
                  * gcc/libstdc++-v3/src/vterminate.cc.
                  */
                 type_info *tinfo = __cxxabiv1::__cxa_current_exception_type();
-                if (!tinfo)
+                if(!tinfo)
+                {
                     return 0;
+                }
 
                 /* 0 = success, -1 = failed allocating memory,
                  * -2 = invalid name, -3 = invalid argument */
                 int status = 0;
                 char *demangled = __cxxabiv1::__cxa_demangle(tinfo->name(), NULL, NULL, &status);
-                if (status == -1)
-                    oom(); /* failed allocating memory */
+                if(status == -1)
+                {
+                    oom();    /* failed allocating memory */
+                }
 
                 return (status == 0 ? demangled : xstrdup(tinfo->name()));
             }
@@ -533,20 +587,22 @@ out:
             /* #include <unwind-cxx.h> */
             void cleanup_current_exception()
             {
-#if 0
+                #if 0
                 /*
                  * I believe this is the correct code, but there's no way to
                  * compile it because the unwind-cxx.h header is not shipped.
                  */
                 __cxa_eh_globals *globals = __cxa_get_globals();
                 __cxa_exception *header = globals->caughtExceptions;
-                if (header)
+                if(header)
                 {
-                    if (header->exceptionDestructor)
+                    if(header->exceptionDestructor)
+                    {
                         header->exceptionDestructor(header + 1);
+                    }
                     __cxa_free_exception(header + 1)
                 }
-#endif
+                #endif
             }
 
             // close namespaces

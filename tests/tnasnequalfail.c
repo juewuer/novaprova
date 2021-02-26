@@ -15,7 +15,7 @@
  */
 #include <np.h>
 
-#define GREET	"Hello"
+#define GREET   "Hello"
 static void test_assert_str_not_equal_fail(void)
 {
     const char *x = "Hello";

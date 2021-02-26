@@ -16,9 +16,9 @@
 
 class coffee
 {
-  public:
+public:
     int keffiyeh(int x);
-  private:
+private:
     static coffee *milkshk;
     static int sartorial;
 };

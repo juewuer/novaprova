@@ -30,9 +30,11 @@ static int opento(const char *filename, int flags, int mode, int tofd)
 {
     int tmpfd, retfd;
     tmpfd = open(filename, flags, mode);
-    if (tmpfd < 0)
+    if(tmpfd < 0)
+    {
         return -1;
-    retfd = dup2(tmpfd, tofd);	// could be -1
+    }
+    retfd = dup2(tmpfd, tofd);  // could be -1
     close(tmpfd);
     return retfd;
 }
@@ -51,7 +53,7 @@ static int set_up(void)
 
 static int tear_down(void)
 {
-    if (the_fd >= 0)
+    if(the_fd >= 0)
     {
         close(the_fd);
         the_fd = -1;

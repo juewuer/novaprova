@@ -15,7 +15,7 @@
  */
 
 #include <syslog.h>
-#include <np.h>	    /* NovaProva library */
+#include <np.h>     /* NovaProva library */
 
 static void test_unexpected(void)
 {

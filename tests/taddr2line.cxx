@@ -30,7 +30,7 @@ static void addr2line(unsigned long addr)
 {
     np::spiegel::location_t loc;
 
-    if (!np::spiegel::describe_address(addr, loc))
+    if(!np::spiegel::describe_address(addr, loc))
     {
         printf("address 0x%lx filename - line - function - offset -\n", addr);
         return;
@@ -49,42 +49,52 @@ int main(int argc, char **argv __attribute__((unused)))
     const char *filename = 0;
     unsigned long addr = (unsigned long)&some_function + 2;
     bool stdin_flag = false;
-    if (argc > 1)
+    if(argc > 1)
     {
-        if (!strcmp(argv[1], "-"))
+        if(!strcmp(argv[1], "-"))
+        {
             stdin_flag = true;
+        }
         else
+        {
             addr = strtoul(argv[1], 0, 0);
+        }
     }
-    if (argc > 2)
+    if(argc > 2)
     {
         filename = argv[2];
     }
-    if (argc > 3)
+    if(argc > 3)
     {
         fatal("Usage: taddr2line [addr [executable]]\n");
     }
 
     np::spiegel::dwarf::state_t state;
-    if (filename)
+    if(filename)
     {
-        if (!state.add_executable(filename))
+        if(!state.add_executable(filename))
+        {
             return 1;
+        }
     }
     else
     {
-        if (!state.add_self())
+        if(!state.add_self())
+        {
             return 1;
+        }
     }
 
-    if (stdin_flag)
+    if(stdin_flag)
     {
         char buf[128];
-        while (fgets(buf, sizeof(buf), stdin))
+        while(fgets(buf, sizeof(buf), stdin))
         {
             char *p = strchr(buf, '\n');
-            if (p)
+            if(p)
+            {
                 *p = '\0';
+            }
             addr = strtoul(buf, 0, 0);
             addr2line(addr);
         }

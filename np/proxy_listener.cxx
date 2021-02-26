@@ -38,7 +38,7 @@ namespace np
     {
         unsigned int len = (s ? strlen(s) : 0);
         serialise_uint(fd, len);
-        if (len)
+        if(len)
         {
             write(fd, s, len);
             write(fd, "\0", 1);
@@ -60,15 +60,15 @@ namespace np
     {
         int r;
 
-        while (len)
+        while(len)
         {
             r = read(fd, p, len);
-            if (r < 0)
+            if(r < 0)
             {
                 perror("np: error reading from proxy");
                 return false;
             }
-            if (r == 0)
+            if(r == 0)
             {
                 fprintf(stderr, "np: unexpected EOF deserialising from proxy\n");
                 return false;
@@ -88,10 +88,12 @@ namespace np
     {
         unsigned int len;
 
-        if (!(deserialise_uint(fd, &len)))
+        if(!(deserialise_uint(fd, &len)))
+        {
             return false;
+        }
         *buf = (char *) malloc(sizeof(char) * (len + 1));
-        if (!len)
+        if(!len)
         {
             *buf[0] = '\0';
             return true;
@@ -109,20 +111,34 @@ namespace np
         char *filename = NULL;
         char *function = NULL;
 
-        if (!(deserialise_uint(fd, &which)))
+        if(!(deserialise_uint(fd, &which)))
+        {
             return false;
-        if (!(deserialise_string(fd, &description)))
+        }
+        if(!(deserialise_string(fd, &description)))
+        {
             return false;
-        if (!(deserialise_uint(fd, &locflags)))
+        }
+        if(!(deserialise_uint(fd, &locflags)))
+        {
             return false;
-        if (!(deserialise_string(fd, &filename)))
+        }
+        if(!(deserialise_string(fd, &filename)))
+        {
             return false;
-        if (!(deserialise_uint(fd, &lineno)))
+        }
+        if(!(deserialise_uint(fd, &lineno)))
+        {
             return false;
-        if (!(deserialise_string(fd, &function)))
+        }
+        if(!(deserialise_string(fd, &function)))
+        {
             return false;
-        if (!(deserialise_uint(fd, &ft)))
+        }
+        if(!(deserialise_uint(fd, &ft)))
+        {
             return false;
+        }
         ev->which = (enum events_t)which;
         ev->description = description;
         ev->locflags = locflags;
@@ -135,12 +151,18 @@ namespace np
 
     static void deserialise_event_cleanup(event_t *ev)
     {
-        if (ev->description)
+        if(ev->description)
+        {
             free((void *)ev->description);
-        if (ev->filename)
+        }
+        if(ev->filename)
+        {
             free((void *)ev->filename);
-        if (ev->function)
+        }
+        if(ev->function)
+        {
             free((void *)ev->function);
+        }
     }
 
     /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -194,18 +216,18 @@ namespace np
         event_t ev;
         unsigned int res;
 
-#if _NP_DEBUG
+        #if _NP_DEBUG
         fprintf(stderr, "np: proxy_listener_t::handle_call()\n");
-#endif
-        if (deserialise_uint(fd, &which))
+        #endif
+        if(deserialise_uint(fd, &which))
         {
-            switch (which)
+            switch(which)
             {
                 case PROXY_EVENT:
-#if _NP_DEBUG
+                    #if _NP_DEBUG
                     fprintf(stderr, "np: deserializing EVENT\n");
-#endif
-                    if (deserialise_event(fd, &ev))
+                    #endif
+                    if(deserialise_event(fd, &ev))
                     {
                         *resp = merge(*resp, np::runner_t::running()->raise_event(j, &ev));
                         deserialise_event_cleanup(&ev);
@@ -214,13 +236,13 @@ namespace np
                     deserialise_event_cleanup(&ev);
                     break;
                 case PROXY_FINISHED:
-#if _NP_DEBUG
+                    #if _NP_DEBUG
                     fprintf(stderr, "np: deserializing FINISHED\n");
-#endif
-                    if (deserialise_uint(fd, &res))
+                    #endif
+                    if(deserialise_uint(fd, &res))
                     {
                         *resp = merge(*resp, (result_t)res);
-                        return false;	      /* end of test, expect no more calls */
+                        return false;         /* end of test, expect no more calls */
                     }
                     break;
                 default:

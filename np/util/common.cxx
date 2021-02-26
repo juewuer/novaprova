@@ -46,11 +46,13 @@ namespace np
         {
             int remain = len;
 
-            while (remain > 0)
+            while(remain > 0)
             {
                 int n = write(fd, buf, remain);
-                if (n < 0)
+                if(n < 0)
+                {
                     return -1;
+                }
                 buf += n;
                 remain -= n;
             }
@@ -61,10 +63,14 @@ namespace np
         {
             static const char message[] = ": no memory, exiting\n";
 
-            if (do_write(2, argv0, strlen(argv0)) < 0)
+            if(do_write(2, argv0, strlen(argv0)) < 0)
+            {
                 exit(1);
-            if (do_write(2, message, sizeof(message) - 1) < 0)
+            }
+            if(do_write(2, message, sizeof(message) - 1) < 0)
+            {
                 exit(1);
+            }
             exit(1);
         }
 
@@ -73,8 +79,10 @@ namespace np
             void *x;
 
             x = malloc(sz);
-            if (!x)
+            if(!x)
+            {
                 oom();
+            }
             memset(x, 0, sz);
             return x;
         }
@@ -84,12 +92,16 @@ namespace np
             char *x;
             size_t len;
 
-            if (!s)
+            if(!s)
+            {
                 return 0;
+            }
             len = strlen(s);
             x = (char *)malloc(len + 1);
-            if (!x)
+            if(!x)
+            {
                 oom();
+            }
             return strcpy(x, s);
         }
 
@@ -98,8 +110,10 @@ namespace np
             void *x;
 
             x = realloc(p, sz);
-            if (!x)
+            if(!x)
+            {
                 oom();
+            }
             return x;
         }
 
@@ -159,7 +173,7 @@ namespace np
         static void rel_format_buf(int64_t rel, char *buf, int maxlen)
         {
             const char *sign = "";
-            if (rel < 0)
+            if(rel < 0)
             {
                 rel = -rel;
                 sign = "-";
@@ -180,11 +194,11 @@ namespace np
         {
             static int64_t first;
             int64_t now = rel_now();
-            if (!first)
+            if(!first)
             {
                 static const char var[] = "__NP_EPOCH";
                 const char *e = getenv(var);
-                if (e)
+                if(e)
                 {
                     first = strtoull(e, 0, 0);
                 }
@@ -210,19 +224,27 @@ namespace np
 
         int u32cmp(uint32_t ul1, uint32_t ul2)
         {
-            if (ul1 > ul2)
+            if(ul1 > ul2)
+            {
                 return 1;
-            if (ul1 < ul2)
+            }
+            if(ul1 < ul2)
+            {
                 return -1;
+            }
             return 0;
         }
 
         int u64cmp(uint64_t ull1, uint64_t ull2)
         {
-            if (ull1 > ull2)
+            if(ull1 > ull2)
+            {
                 return 1;
-            if (ull1 < ull2)
+            }
+            if(ull1 < ull2)
+            {
                 return -1;
+            }
             return 0;
         }
 
@@ -231,8 +253,10 @@ namespace np
         unsigned long page_size(void)
         {
             static unsigned long ps;
-            if (!ps)
+            if(!ps)
+            {
                 ps = sysconf(_SC_PAGESIZE);
+            }
             return ps;
         }
 

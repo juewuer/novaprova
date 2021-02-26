@@ -24,10 +24,10 @@ namespace foo
 
     class exception : public std::exception
     {
-      private:
+    private:
         char *msg_;
 
-      public:
+    public:
         exception() throw() : msg_(0) {}
         exception(const char *m) throw() : msg_(m ? strdup(m) : 0) {}
         ~exception() throw()
@@ -62,7 +62,7 @@ static void test_caught_exception(void)
         foo::bar();
         fprintf(stderr, "MSG after call to bar, in try block\n");
     }
-    catch (foo::exception& e)
+    catch(foo::exception &e)
     {
         fprintf(stderr, "MSG caught exception: %s\n", e.what());
     }

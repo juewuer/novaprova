@@ -25,7 +25,7 @@ namespace np
 
             void value_t::dump() const
             {
-                switch (type)
+                switch(type)
                 {
                     case T_UNDEF:
                         printf("<undef>");
@@ -50,7 +50,7 @@ namespace np
                         const unsigned char *u = val.bytes.buf;
                         unsigned len = val.bytes.len;
                         const char *sep = "";
-                        while (len--)
+                        while(len--)
                         {
                             printf("%s0x%02x", sep, (unsigned)*u++);
                             sep = " ";

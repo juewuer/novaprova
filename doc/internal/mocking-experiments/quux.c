@@ -39,7 +39,7 @@ struct breakpoint
 };
 
 static volatile int got_sigtrap = 0;
-static int hack1 = 0;	    /* this is always zero */
+static int hack1 = 0;       /* this is always zero */
 
 static struct breakpoint thebp;
 
@@ -50,7 +50,7 @@ static void setup_breakpoint(struct breakpoint *bp, void *addr,
     static unsigned long page_size = 0;
     int r;
 
-    if (*(unsigned char *)addr != 0x55)
+    if(*(unsigned char *)addr != 0x55)
     {
         fprintf(stderr, "Cannot intercept leaf function, sorry\n");
         exit(1);
@@ -65,12 +65,14 @@ static void setup_breakpoint(struct breakpoint *bp, void *addr,
     printf("Making the function writable\n");
 
     /* adjust region to the enclosing page */
-    if (!page_size)
+    if(!page_size)
+    {
         page_size = sysconf(_SC_PAGESIZE);
+    }
     addr = (void *)((unsigned long)addr - ((unsigned long)addr % page_size));
 
     r = mprotect(addr, page_size, PROT_READ | PROT_WRITE | PROT_EXEC);
-    if (r)
+    if(r)
     {
         perror("mprotect");
         exit(1);
@@ -83,12 +85,12 @@ static void setup_breakpoint(struct breakpoint *bp, void *addr,
 
 #if 0
 __asm__(
-    "    .text\n"
-    "    .type	tramp2, @function\n"
-    "tramp2:\n"
-    "    mov    $0x0,%eax\n"
-    "    movb   $0x0,(%eax)\n"
-    "    .size	tramp2, .-tramp2\n"
+                "    .text\n"
+                "    .type	tramp2, @function\n"
+                "tramp2:\n"
+                "    mov    $0x0,%eax\n"
+                "    movb   $0x0,(%eax)\n"
+                "    .size	tramp2, .-tramp2\n"
 );
 extern void tramp2(void);
 #endif
@@ -111,8 +113,10 @@ static unsigned long tramp(void)
      * instead generates a bogus address in the middle of the function!
      * This was needlessly confusing.
      */
-    if (hack1)
+    if(hack1)
+    {
         goto after;
+    }
 
     printf("tramp: starting, RA=%p\n", __builtin_return_address(0));
 
@@ -125,7 +129,7 @@ static unsigned long tramp(void)
      * fpuc.uc_mcontect.fpregs which points to fpuc.__fpregs_mem.
      */
     memset(&fpuc, 0, sizeof(fpuc));
-    if (getcontext(&fpuc))
+    if(getcontext(&fpuc))
     {
         perror("getcontext");
         exit(1);
@@ -191,14 +195,16 @@ static unsigned long tramp(void)
          * It should also be able to longjmp() out without drama,
          * e.g. as a side effect of failing a U4C_ASSERT().
          */
-        if (bp->before)
+        if(bp->before)
         {
             bp->args = frame.args;
             bp->skip = 0;
             bp->retval = 0;
             bp->before(bp);
-            if (bp->skip)
+            if(bp->skip)
+            {
                 return bp->retval;
+            }
         }
 
         /* switch to the ucontext */
@@ -223,7 +229,7 @@ after:
      * function in bp->retval.  It should also be able to longjmp() out
      * without drama, e.g. as a side effect of failing a U4C_ASSERT().
      */
-    if (bp->after)
+    if(bp->after)
     {
         bp->retval = rv;
         bp->after(bp);
@@ -243,37 +249,39 @@ static void handle_sigtrap(int sig, siginfo_t *si, void *vuc)
            si->si_code);
     // it turns out that neither si_pid nor si_address are meaningful
     // for SIGTRAP
-    if (si->si_signo != SIGTRAP)
+    if(si->si_signo != SIGTRAP)
+    {
         return;
+    }
     //     if (si->si_code != SI_KERNEL)
-    // 	return;
+    //  return;
     printf("handle_sigtrap: faulted at EIP 0x%08lx ESP 0x%08lx\n",
            (unsigned long)uc->uc_mcontext.gregs[REG_EIP],
            (unsigned long)uc->uc_mcontext.gregs[REG_ESP]);
-    switch (bp->state)
+    switch(bp->state)
     {
         case 0:
             /* first trap, from INT3 insn */
             printf("handle_sigtrap: trap from int3\n");
-            // 	/* temporarily remove the INT3 insn */
-            // 	*(unsigned char *)bp->addr = bp->old_insn;
+            //  /* temporarily remove the INT3 insn */
+            //  *(unsigned char *)bp->addr = bp->old_insn;
             /* stash the ucontext for the tramp */
             bp->uc = *uc;
             /* munge the signal ucontext so we return from
              * the signal into the tramp instead of the
              * original function */
             uc->uc_mcontext.gregs[REG_EIP] = (unsigned long)&tramp;
-            // 	bp->state = 1;
+            //  bp->state = 1;
             break;
             //     case 1:
-            // 	printf("handle_sigtrap: trap from single-stepping\n");
-            // 	/* single step trap due to TF in EFLAGS */
-            // 	bp->state = 0;
-            // 	/* restore the INT3 insn */
-            // 	*(unsigned char *)bp->addr = 0xcc;
-            // 	/* stop single-stepping */
-            // 	uc->uc_mcontext.gregs[REG_EFL] &= ~0x100;    /* TF Trace Flag */
-            // 	break;
+            //  printf("handle_sigtrap: trap from single-stepping\n");
+            //  /* single step trap due to TF in EFLAGS */
+            //  bp->state = 0;
+            //  /* restore the INT3 insn */
+            //  *(unsigned char *)bp->addr = 0xcc;
+            //  /* stop single-stepping */
+            //  uc->uc_mcontext.gregs[REG_EFL] &= ~0x100;    /* TF Trace Flag */
+            //  break;
     }
     printf("handle_sigtrap: ending\n");
     got_sigtrap++;
@@ -287,7 +295,7 @@ int the_function(int x, int y)
 
     printf("Start of the_function, RA=%p x=%d y=%d\n",
            __builtin_return_address(0), x, y);
-    for (i = 0 ; i < x ; i++)
+    for(i = 0 ; i < x ; i++)
     {
         y *= 5;
         y--;
@@ -335,8 +343,10 @@ int main(int argc, char **argv)
     act.sa_flags |= SA_SIGINFO;
     sigaction(SIGTRAP, &act, NULL);
 
-    if (doit)
+    if(doit)
+    {
         setup_breakpoint(&thebp, &the_function, before, after);
+    }
 
     do_the_calling();
 

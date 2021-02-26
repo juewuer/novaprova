@@ -28,67 +28,79 @@ namespace np
             using namespace std;
             using namespace np::util;
 
-            bool compile_unit_t::read_header(reader_t& r)
+            bool compile_unit_t::read_header(reader_t &r)
             {
-                reader_ = r;	    // sample offset of start of header
+                reader_ = r;        // sample offset of start of header
 
-#if _NP_DEBUG
+                #if _NP_DEBUG
                 fprintf(stderr, "np: DWARF compile unit header at "
                         "section offset 0x%lx\n",
                         r.get_offset());
-#endif
+                #endif
 
                 np::spiegel::offset_t length;
                 uint16_t version;
                 bool is64 = false;
-                if (!r.read_u32(length))
+                if(!r.read_u32(length))
+                {
                     return false;
-                if (length == 0xffffffff)
+                }
+                if(length == 0xffffffff)
                 {
                     /* An all-1 length marks the 64-bit format
                      * introduced in the DWARF3 standard */
-#if _NP_ADDRSIZE == 4
+                    #if _NP_ADDRSIZE == 4
                     fatal("The 64-bit DWARF format is not supported on 32-bit architectures");
-#elif _NP_ADDRSIZE == 8
+                    #elif _NP_ADDRSIZE == 8
                     is64 = true;
-                    if (!r.read_u64(length))
+                    if(!r.read_u64(length))
+                    {
                         return false;
-#else
+                    }
+                    #else
 #error "Unknown address size"
-#endif
+                    #endif
                 }
-                if (length > r.get_remains())
+                if(length > r.get_remains())
+                {
                     fatal("Bad DWARF compile unit length %llu", (unsigned long long)length);
+                }
 
-                if (!r.read_u16(version))
+                if(!r.read_u16(version))
+                {
                     return false;
-                if (version < MIN_DWARF_VERSION || version > MAX_DWARF_VERSION)
+                }
+                if(version < MIN_DWARF_VERSION || version > MAX_DWARF_VERSION)
                     fatal("Bad DWARF version %u, expecting %u-%u",
                           version, MIN_DWARF_VERSION, MAX_DWARF_VERSION);
-                if (length < (unsigned)(header_length - (is64 ? 14 : 6)/*read so far*/))
+                if(length < (unsigned)(header_length - (is64 ? 14 : 6)/*read so far*/))
+                {
                     fatal("Bad DWARF compile unit length %llu", (unsigned long long)length);
+                }
 
                 uint8_t addrsize;
-                if (!r.read_u32(abbrevs_offset_) ||
+                if(!r.read_u32(abbrevs_offset_) ||
                         !r.read_u8(addrsize))
+                {
                     return false;
-                if (addrsize != _NP_ADDRSIZE)
+                }
+                if(addrsize != _NP_ADDRSIZE)
                     fatal("Bad DWARF addrsize %u, expecting %u",
                           addrsize, _NP_ADDRSIZE);
 
-#if _NP_DEBUG
+                #if _NP_DEBUG
                 fprintf(stderr, "np: length %u version %u is64 %s abbrevs_offset %u addrsize %u\n",
                         (unsigned)length,
                         (unsigned)version,
                         is64 ? "true" : "false",
                         (unsigned)abbrevs_offset_,
                         (unsigned)addrsize);
-#endif
+                #endif
 
                 version_ = version;
                 is64_ = is64;
 
-                length += is64 ? 12 : 4;	// account for the `length' field of the header
+                length += is64 ? 12 : 4;    // account for the `length' field of the header
 
                 // setup reader_ to point to the whole compile
                 // unit but not any bytes of the next one
@@ -101,25 +113,27 @@ namespace np
                 return true;
             }
 
-            void compile_unit_t::read_abbrevs(reader_t& r)
+            void compile_unit_t::read_abbrevs(reader_t &r)
             {
-#if _NP_DEBUG
+                #if _NP_DEBUG
                 fprintf(stderr, "np: reading abbrevs\n");
-#endif
+                #endif
                 r.seek(abbrevs_offset_);
 
                 uint32_t code;
                 /* code 0 indicates end of compile unit */
-                while (r.read_uleb128(code) && code)
+                while(r.read_uleb128(code) && code)
                 {
                     abbrev_t *a = new abbrev_t(code);
-                    if (!a->read(r))
+                    if(!a->read(r))
                     {
                         delete a;
                         break;
                     }
-                    if (a->code >= abbrevs_.size())
+                    if(a->code >= abbrevs_.size())
+                    {
                         abbrevs_.resize(a->code + 1, 0);
+                    }
                     abbrevs_[a->code] = a;
                 }
             }
@@ -130,11 +144,13 @@ namespace np
                 fprintf(stderr, "np: Abbrevs {\n");
 
                 vector<abbrev_t *>::const_iterator itr;
-                for (itr = abbrevs_.begin() ; itr != abbrevs_.end() ; ++itr)
+                for(itr = abbrevs_.begin() ; itr != abbrevs_.end() ; ++itr)
                 {
                     abbrev_t *a = *itr;
-                    if (!a)
+                    if(!a)
+                    {
                         continue;
+                    }
                     fprintf(stderr, "np: Code %u\n", a->code);
                     fprintf(stderr, "np:     tag 0x%x (%s)\n", a->tag, tagnames.to_name(a->tag));
                     fprintf(stderr, "np:     children %u (%s)\n",
@@ -143,7 +159,7 @@ namespace np
                     fprintf(stderr, "np:     attribute specifications {\n");
 
                     vector<abbrev_t::attr_spec_t>::iterator i;
-                    for (i = a->attr_specs.begin() ; i != a->attr_specs.end() ; ++i)
+                    for(i = a->attr_specs.begin() ; i != a->attr_specs.end() ; ++i)
                     {
                         fprintf(stderr, "np:         name 0x%x (%s)",
                                 i->name, attrnames.to_name(i->name));

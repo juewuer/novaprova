@@ -25,10 +25,10 @@ bool CU_assertImplementation(bool bValue,
                              bool bFatal __attribute__((unused)))
 {
     //     fprintf(stderr, "    %s at %s:%u\n", strCondition, strFile, uiLine);
-    if (!bValue)
+    if(!bValue)
     {
         np_throw(np::event_t(np::EV_ASSERT, strCondition).at_line(
-                     strFile, uiLine).in_function(strFunction).with_stack());
+                                 strFile, uiLine).in_function(strFunction).with_stack());
     }
     return true;
 }

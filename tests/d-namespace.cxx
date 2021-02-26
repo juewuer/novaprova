@@ -22,7 +22,7 @@ namespace cosby
         int etsy = 42;
         class vegan
         {
-          public:
+        public:
             static int dreamcatcher;
             int locavore;
             int mcsweeneys(int x);

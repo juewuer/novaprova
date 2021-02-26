@@ -29,7 +29,7 @@
 void __np_terminate_handler(void)
 {
     char *name = np::spiegel::platform::current_exception_type();
-    if (!name)
+    if(!name)
     {
         np_throw(np::event_t(np::EV_EXCEPTION,
                              "terminate called without an active exception").with_stack());
@@ -46,15 +46,15 @@ void __np_terminate_handler(void)
      */
     try
     {
-        throw;	/* re-throw */
+        throw;  /* re-throw */
     }
-    catch (std::exception& ex)
+    catch(std::exception &ex)
     {
         /* append to the static buffer */
         int l = strlen(desc);
         snprintf(desc + l, sizeof(desc) - l, ": %s", ex.what());
     }
-    catch (...)
+    catch(...)
     {
         /* nope, it wasn't derived from std::exception.  Nevermind */
     }

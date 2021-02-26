@@ -34,20 +34,24 @@ namespace np
 
     testmanager_t::~testmanager_t()
     {
-        while (classifiers_.size())
+        while(classifiers_.size())
         {
             delete classifiers_.back();
             classifiers_.pop_back();
         }
 
         delete root_;
-        if (common_ != root_)
+        if(common_ != root_)
+        {
             delete common_;
+        }
         root_ = 0;
         common_ = 0;
 
-        if (spiegel_)
+        if(spiegel_)
+        {
             delete spiegel_;
+        }
 
         assert(instance_ == this);
         instance_ = 0;
@@ -56,11 +60,11 @@ namespace np
 
     testmanager_t *testmanager_t::instance()
     {
-        if (!instance_)
+        if(!instance_)
         {
-#if _NP_DEBUG
+            #if _NP_DEBUG
             fprintf(stderr, "np: creating testmanager_t instance\n");
-#endif
+            #endif
             new testmanager_t();
             instance_->print_banner();
             instance_->setup_classifiers();
@@ -68,7 +72,7 @@ namespace np
             instance_->setup_builtin_intercepts();
             /* TODO: check tree for a) leaves without FT_TEST
              * and b) non-leaves with FT_TEST */
-            // 	instance_->root_->dump(0);
+            //  instance_->root_->dump(0);
         }
         return instance_;
     }
@@ -84,15 +88,19 @@ namespace np
             char *match_return,
             size_t maxmatch)
     {
-        if (match_return)
+        if(match_return)
+        {
             match_return[0] = '\0';
+        }
 
         vector<classifier_t *>::iterator i;
-        for (i = classifiers_.begin() ; i != classifiers_.end() ; ++i)
+        for(i = classifiers_.begin() ; i != classifiers_.end() ; ++i)
         {
             functype_t ft = (functype_t)(*i)->classify(func, match_return, maxmatch);
-            if (ft != FT_UNKNOWN)
+            if(ft != FT_UNKNOWN)
+            {
                 return ft;
+            }
             /* else, no match: just keep looking */
         }
         return FT_UNKNOWN;
@@ -103,17 +111,17 @@ namespace np
                                        functype_t type)
     {
         classifier_t *cl = new classifier_t;
-        if (!cl->set_regexp(re, case_sensitive))
+        if(!cl->set_regexp(re, case_sensitive))
         {
             delete cl;
             return;
         }
         cl->set_results(FT_UNKNOWN, type);
         classifiers_.push_back(cl);
-#if _NP_DEBUG
+        #if _NP_DEBUG
         fprintf(stderr, "np: adding classifier /%s/%s -> %s\n",
                 re, (case_sensitive ? "i" : ""), np::as_string(type));
-#endif
+        #endif
     }
 
     void testmanager_t::setup_classifiers()
@@ -137,10 +145,12 @@ namespace np
 
         /* strip the .c or .cxx extension */
         size_t p = name.find_last_of('.');
-        if (p != string::npos)
+        if(p != string::npos)
+        {
             name.resize(p);
+        }
 
-        if (submatch && submatch[0])
+        if(submatch && submatch[0])
         {
             name += "/";
             name += submatch;
@@ -153,14 +163,16 @@ namespace np
     {
         vector<np::spiegel::compile_unit_t *> units = np::spiegel::get_compile_units();
         vector<np::spiegel::compile_unit_t *>::iterator i;
-        for (i = units.begin() ; i != units.end() ; ++i)
+        for(i = units.begin() ; i != units.end() ; ++i)
         {
             vector<np::spiegel::function_t *> fns = (*i)->get_functions();
             vector<np::spiegel::function_t *>::iterator j;
-            for (j = fns.begin() ; j != fns.end() ; ++j)
+            for(j = fns.begin() ; j != fns.end() ; ++j)
             {
-                if ((*j)->get_name() == name)
+                if((*j)->get_name() == name)
+                {
                     return *j;
+                }
             }
         }
         return 0;
@@ -175,60 +187,68 @@ namespace np
 
     void testmanager_t::discover_functions()
     {
-        if (!spiegel_)
+        if(!spiegel_)
         {
-#if _NP_DEBUG
+            #if _NP_DEBUG
             fprintf(stderr, "np: creating np::spiegel::dwarf::state_t instance\n");
-#endif
+            #endif
             spiegel_ = new np::spiegel::dwarf::state_t();
             spiegel_->add_self();
             root_ = new testnode_t(0);
         }
         // else: splice common_ and root_ back together
 
-#if _NP_DEBUG
+        #if _NP_DEBUG
         fprintf(stderr, "np: scanning for test functions\n");
-#endif
+        #endif
         vector<np::spiegel::compile_unit_t *> units = np::spiegel::get_compile_units();
         vector<np::spiegel::compile_unit_t *>::iterator i;
         unsigned int ntests = 0;
-        for (i = units.begin() ; i != units.end() ; ++i)
+        for(i = units.begin() ; i != units.end() ; ++i)
         {
-#if _NP_DEBUG
+            #if _NP_DEBUG
             fprintf(stderr, "np: scanning compile unit %s\n", (*i)->get_absolute_path().c_str());
-#endif
+            #endif
             vector<np::spiegel::function_t *> fns = (*i)->get_functions();
             vector<np::spiegel::function_t *>::iterator j;
-            for (j = fns.begin() ; j != fns.end() ; ++j)
+            for(j = fns.begin() ; j != fns.end() ; ++j)
             {
                 np::spiegel::function_t *fn = *j;
                 functype_t type;
                 char submatch[512];
 
                 // We want functions which are defined in this compile unit
-                if (!fn->get_address())
+                if(!fn->get_address())
+                {
                     continue;
+                }
 
                 type = classify_function(fn->get_name().c_str(),
                                          submatch, sizeof(submatch));
-#if _NP_DEBUG
+                #if _NP_DEBUG
                 fprintf(stderr, "np: function %s classified %s submatch \"%s\"\n",
                         fn->get_name().c_str(), np::as_string(type), submatch);
-#endif
-                switch (type)
+                #endif
+                switch(type)
                 {
                     case FT_UNKNOWN:
                         continue;
                     case FT_TEST:
                         // Test functions need a node name
-                        if (!submatch[0])
+                        if(!submatch[0])
+                        {
                             continue;
+                        }
                         // Test function return void
-                        if (fn->get_return_type()->get_classification() != np::spiegel::type_t::TC_VOID)
+                        if(fn->get_return_type()->get_classification() != np::spiegel::type_t::TC_VOID)
+                        {
                             continue;
+                        }
                         // Test functions take no arguments
-                        if (fn->get_parameter_types().size() != 0)
+                        if(fn->get_parameter_types().size() != 0)
+                        {
                             continue;
+                        }
                         root_->make_path(test_name(fn, submatch))->set_function(type, fn);
                         ntests++;
                         break;
@@ -237,38 +257,50 @@ namespace np
                         // Before/after functions go into the parent node
                         assert(!submatch[0]);
                         // Before/after functions return int
-                        if (fn->get_return_type()->get_classification() != np::spiegel::type_t::TC_SIGNED_INT)
+                        if(fn->get_return_type()->get_classification() != np::spiegel::type_t::TC_SIGNED_INT)
+                        {
                             continue;
+                        }
                         // Before/after take no arguments
-                        if (fn->get_parameter_types().size() != 0)
+                        if(fn->get_parameter_types().size() != 0)
+                        {
                             continue;
+                        }
                         root_->make_path(test_name(fn, submatch))->set_function(type, fn);
                         break;
                     case FT_MOCK:
                         // Mock functions need a target name
-                        if (!submatch[0])
+                        if(!submatch[0])
+                        {
                             continue;
+                        }
                         {
                             np::spiegel::function_t *target = find_mock_target(submatch);
-                            if (!target)
+                            if(!target)
+                            {
                                 continue;
+                            }
                             root_->make_path(test_name(fn, 0))->add_mock(target, fn);
                         }
                         break;
                     case FT_PARAM:
                         // Parameters need a name
-                        if (!submatch[0])
+                        if(!submatch[0])
+                        {
                             continue;
+                        }
                         const struct __np_param_dec *dec = get_param_dec(fn);
                         root_->make_path(test_name(fn, 0))->add_parameter(
-                            submatch, dec->var, dec->values);
+                                        submatch, dec->var, dec->values);
                         break;
                 }
             }
         }
 
-        if (!ntests)
+        if(!ntests)
+        {
             fprintf(stderr, "np: WARNING: no tests discovered\n");
+        }
         // Calculate the effective root_ and common_
         common_ = root_;
         root_ = root_->detach_common();

@@ -20,7 +20,7 @@ namespace np
 
     const char *as_string(functype_t type)
     {
-        switch (type)
+        switch(type)
         {
             case FT_UNKNOWN:
                 return "unknown";

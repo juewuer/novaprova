@@ -31,18 +31,22 @@ namespace np
             enum form_values entry_t::get_attribute_form(uint32_t name) const
             {
                 vector<abbrev_t::attr_spec_t>::const_iterator i;
-                for (i = abbrev_->attr_specs.begin() ; i != abbrev_->attr_specs.end() ; ++i)
+                for(i = abbrev_->attr_specs.begin() ; i != abbrev_->attr_specs.end() ; ++i)
                 {
-                    if (i->name == name)
+                    if(i->name == name)
+                    {
                         return (enum form_values)i->form;
+                    }
                 }
                 return (enum form_values)0;
             }
 
             void entry_t::dump() const
             {
-                if (!abbrev_)
+                if(!abbrev_)
+                {
                     return;
+                }
 
                 fprintf(stderr, "np: Entry 0x%x [%u] %s {\n",
                         offset_,
@@ -50,14 +54,18 @@ namespace np
                         tagnames.to_name(abbrev_->tag));
 
                 vector<abbrev_t::attr_spec_t>::const_iterator i;
-                for (i = abbrev_->attr_specs.begin() ; i != abbrev_->attr_specs.end() ; ++i)
+                for(i = abbrev_->attr_specs.begin() ; i != abbrev_->attr_specs.end() ; ++i)
                 {
                     fprintf(stderr, "np:     %s = ", attrnames.to_name(i->name));
                     const value_t *v = get_attribute(i->name);
-                    if (v)
+                    if(v)
+                    {
                         v->dump();
+                    }
                     else
+                    {
                         fprintf(stderr, "<missing>");
+                    }
                     fprintf(stderr, "\n");
                 }
                 fprintf(stderr, "}\n");

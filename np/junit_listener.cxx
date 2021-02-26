@@ -62,7 +62,7 @@ namespace np
         // TODO: mkdir_p
         string directory = "reports";
         int r = mkdir(directory.c_str(), 0777);
-        if (r < 0 && errno != EEXIST)
+        if(r < 0 && errno != EEXIST)
         {
             fprintf(stderr, "np: cannot make directory %s: %s\n",
                     directory.c_str(), strerror(errno));
@@ -70,9 +70,9 @@ namespace np
         }
 
         map<string, suite_t>::iterator sitr;
-        for (sitr = suites_.begin() ; sitr != suites_.end() ; ++sitr)
+        for(sitr = suites_.begin() ; sitr != suites_.end() ; ++sitr)
         {
-            const string& suitename = sitr->first;
+            const string &suitename = sitr->first;
             suite_t *suite = &sitr->second;
 
             xmlDoc *xdoc = xmlNewDoc(s("1.0"));
@@ -95,9 +95,9 @@ namespace np
             map<string, case_t>::iterator citr;
             string all_stdout;
             string all_stderr;
-            for (citr = suite->cases_.begin() ; citr != suite->cases_.end() ; ++citr)
+            for(citr = suite->cases_.begin() ; citr != suite->cases_.end() ; ++citr)
             {
-                const string& casename = citr->first;
+                const string &casename = citr->first;
                 case_t *c = &citr->second;
 
                 xmlNode *xcase = xmlAddChild(xsuite, xmlNewNode(NULL, s("testcase")));
@@ -108,7 +108,7 @@ namespace np
                 sns += c->elapsed_;
                 xmlNewProp(xcase, s("time"), ss(rel_format(c->elapsed_)));
 
-                if (c->event_)
+                if(c->event_)
                 {
                     event_t *e = c->event_;
                     xmlNode *xerror = xmlAddChild(xcase, xmlNewNode(NULL, s("error")));
@@ -118,15 +118,17 @@ namespace np
                                                       "\n" +
                                                       e->get_long_location())));
                 }
-                if (c->result_ == R_FAIL)
+                if(c->result_ == R_FAIL)
+                {
                     nerrs++;
+                }
 
-                if (c->stdout_ != "")
+                if(c->stdout_ != "")
                 {
                     all_stdout += string("===") + casename + string("===\n");
                     all_stdout += c->stdout_;
                 }
-                if (c->stderr_ != "")
+                if(c->stderr_ != "")
                 {
                     all_stderr += string("===") + casename + string("===\n");
                     all_stderr += c->stderr_;
@@ -141,7 +143,7 @@ namespace np
             string filename = directory + string("/TEST-") + suitename + ".xml";
 
             int r = xmlSaveFileEnc(filename.c_str(), xdoc, "UTF-8");
-            if (r < 0)
+            if(r < 0)
             {
                 fprintf(stderr, "np: failed to write JUnit XML file %s: %s\n",
                         filename.c_str(), strerror(errno));
@@ -177,8 +179,10 @@ namespace np
     void junit_listener_t::add_event(const job_t *j, const event_t *ev)
     {
         case_t *c = find_case(j);
-        if (ev->get_result() == R_FAIL && !c->event_)
+        if(ev->get_result() == R_FAIL && !c->event_)
+        {
             c->event_ = ev->clone();
+        }
     }
 
     junit_listener_t::case_t::~case_t()

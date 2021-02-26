@@ -39,7 +39,7 @@ namespace umami
 
 class leggings
 {
-  public:
+public:
     static int dreamcatcher(int x)
     {
         return umami::pickled::irony(x + 3);
@@ -49,12 +49,16 @@ class leggings
 int main(int argc, char **argv)
 {
     np::util::argv0 = argv[0];
-    if (argc != 1)
+    if(argc != 1)
+    {
         fatal("Usage: tstack\n");
+    }
 
     np::spiegel::dwarf::state_t state;
-    if (!state.add_self())
+    if(!state.add_self())
+    {
         return 1;
+    }
 
     leggings::dreamcatcher(42);
 

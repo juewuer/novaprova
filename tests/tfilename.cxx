@@ -21,8 +21,8 @@
 using namespace std;
 using namespace np::util;
 
-#define BASEDIR	"/tmp"
-#define TESTDIR	BASEDIR"/ggcov.filename.test"
+#define BASEDIR "/tmp"
+#define TESTDIR BASEDIR"/ggcov.filename.test"
 
 static char oldcwd[PATH_MAX];
 
@@ -32,10 +32,12 @@ int setup(void)
     int r;
 
     r = system("rm -rf "TESTDIR);
-    if (r)
+    if(r)
+    {
         return -1;
+    }
     r = stat(TESTDIR, &sb);
-    if (r == 0 || errno != ENOENT)
+    if(r == 0 || errno != ENOENT)
     {
         perror(TESTDIR);
         return -1;
@@ -44,18 +46,18 @@ int setup(void)
     mkdir(TESTDIR"/dir3", 0777);
     mkdir(TESTDIR"/dir3/dir4", 0777);
     r = stat(TESTDIR, &sb);
-    if (r != 0)
+    if(r != 0)
     {
         perror(TESTDIR);
         return -1;
     }
 
-    if (getcwd(oldcwd, sizeof(oldcwd)) == NULL)
+    if(getcwd(oldcwd, sizeof(oldcwd)) == NULL)
     {
         perror("getcwd");
         return -1;
     }
-    if (chdir(TESTDIR"/dir3/dir4") < 0)
+    if(chdir(TESTDIR"/dir3/dir4") < 0)
     {
         perror(TESTDIR"/dir3/dir4");
         return -1;
@@ -68,20 +70,26 @@ int teardown()
 {
     int r;
 
-    if (oldcwd[0])
+    if(oldcwd[0])
+    {
         chdir(oldcwd);
+    }
 
     r = system("rm -rf "TESTDIR);
-    if (r)
+    if(r)
+    {
         return -1;
+    }
     return 0;
 }
 
 int main(int argc, char **argv __attribute__((unused)))
 {
     argv0 = argv[0];
-    if (argc != 1)
+    if(argc != 1)
+    {
         fatal("Usage: %s filenames\n", argv0);
+    }
 
 #define TESTCASE(in, expected) \
     { \
