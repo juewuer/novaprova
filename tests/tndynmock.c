@@ -28,14 +28,14 @@ int bird_tequila(int x)
 {
     fprintf(stderr, "bird_tequila(%d)\n", x);
     called = 1;
-    return x/2;
+    return x / 2;
 }
 
 int not_bird_tequila(int x)
 {
     fprintf(stderr, "mocked bird_tequila(%d)\n", x);
     called = 2;
-    return x*2;
+    return x * 2;
 }
 
 static void test_dynamic_mocking(void)

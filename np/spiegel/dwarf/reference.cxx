@@ -15,7 +15,12 @@
  */
 #include "reference.hxx"
 
-namespace np { namespace spiegel { namespace dwarf {
+namespace np
+{
+namespace spiegel
+{
+namespace dwarf
+{
 using namespace std;
 
 const reference_t reference_t::null = { 0, 0 };
@@ -28,4 +33,6 @@ string reference_t::as_string() const
 }
 
 // close the namespaces
-}; }; };
+};
+};
+};

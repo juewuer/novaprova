@@ -19,7 +19,8 @@
 #include "np/util/config.h"
 #include "np/util/common.hxx"
 
-namespace np {
+namespace np
+{
 /*
  * NovaProva reflection library namespace.
  *
@@ -29,7 +30,8 @@ namespace np {
  *
  * For now the spiegel C++ interface is undocumented.
  */
-namespace spiegel {
+namespace spiegel
+{
 
 /*
  * Offsets into an ELF file can be 32-bit or 64-bit depending on the file
@@ -45,17 +47,18 @@ namespace spiegel {
  * architecture we handle both file formats at runtime.
  */
 #if _NP_ADDRSIZE == 4
-typedef uint32_t addr_t;		/* holds a machine address */
-typedef uint32_t offset_t;		/* holds an ELF file offset */
+    typedef uint32_t addr_t;		/* holds a machine address */
+    typedef uint32_t offset_t;		/* holds an ELF file offset */
 #elif _NP_ADDRSIZE == 8
-typedef uint64_t addr_t;		/* holds a machine address */
-typedef uint64_t offset_t;		/* holds an ELF file offset */
+    typedef uint64_t addr_t;		/* holds a machine address */
+    typedef uint64_t offset_t;		/* holds an ELF file offset */
 #else
-#error "Unknown address size"
+    #error "Unknown address size"
 #endif
 
 // close the namespaces
-}; };
+};
+};
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 

@@ -16,16 +16,18 @@
 #ifndef __NP_PROFILE_H__
 #define __NP_PROFILE_H__ 1
 
-namespace np {
-namespace profile {
+namespace np
+{
+namespace profile
+{
 
 class probe_t
 {
-public:
+  public:
     probe_t(const char *function);
     ~probe_t();
 
-private:
+  private:
     void log(const char *which);
 
     const char *function_;
@@ -34,12 +36,13 @@ private:
 };
 
 #if 1
-#define PROFILE
+    #define PROFILE
 #else
-#define PROFILE np::profile::probe_t __np_profile_probe(__FUNCTION__);
+    #define PROFILE np::profile::probe_t __np_profile_probe(__FUNCTION__);
 #endif
 
 // close the namespace
-}; };
+};
+};
 
 #endif /* __NP_PROFILE_H__ */

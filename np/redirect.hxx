@@ -20,24 +20,25 @@
 #include "np/types.hxx"
 #include "np/spiegel/spiegel.hxx"
 
-namespace np {
+namespace np
+{
 
 class redirect_t : public spiegel::intercept_t
 {
-public:
+  public:
     redirect_t(spiegel::addr_t from, const char *fromname, spiegel::addr_t to)
-     :  intercept_t(from, fromname),
-	to_(to)
+        :  intercept_t(from, fromname),
+           to_(to)
     {}
     ~redirect_t() {}
 
-    void before(spiegel::call_t &call)
+    void before(spiegel::call_t& call)
     {
-	call.redirect(to_);
+        call.redirect(to_);
     }
-    void after(spiegel::call_t &call __attribute__((unused))) {}
+    void after(spiegel::call_t& call __attribute__((unused))) {}
 
-private:
+  private:
     spiegel::addr_t to_;
 };
 

@@ -20,18 +20,17 @@
 using namespace std;
 using namespace np::util;
 
-int
-main(int argc __attribute__((unused)),
-     char **argv __attribute__((unused)))
+int main(int argc __attribute__((unused)),
+         char **argv __attribute__((unused)))
 {
 #define TESTCASE(in, out) \
     { \
-	BEGIN("read_sleb128(%d)", out); \
-	np::spiegel::dwarf::reader_t r(in, sizeof(in)-1); \
-	int32_t v = 0; \
-	CHECK(r.read_sleb128(v)); \
-	CHECK(v == out); \
-	END; \
+        BEGIN("read_sleb128(%d)", out); \
+        np::spiegel::dwarf::reader_t r(in, sizeof(in)-1); \
+        int32_t v = 0; \
+        CHECK(r.read_sleb128(v)); \
+        CHECK(v == out); \
+        END; \
     }
     TESTCASE("\x02", 2);
     TESTCASE("\x7e", -2);
@@ -45,12 +44,12 @@ main(int argc __attribute__((unused)),
 #undef TESTCASE
 #define TESTCASE(in, out) \
     { \
-	BEGIN("read_uleb128(%u)", out); \
-	np::spiegel::dwarf::reader_t r(in, sizeof(in)-1); \
-	uint32_t v = 0; \
-	CHECK(r.read_uleb128(v)); \
-	CHECK(v == out); \
-	END; \
+        BEGIN("read_uleb128(%u)", out); \
+        np::spiegel::dwarf::reader_t r(in, sizeof(in)-1); \
+        uint32_t v = 0; \
+        CHECK(r.read_uleb128(v)); \
+        CHECK(v == out); \
+        END; \
     }
 
     TESTCASE("\x02", 2);

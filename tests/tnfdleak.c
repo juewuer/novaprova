@@ -31,7 +31,7 @@ static int opento(const char *filename, int flags, int mode, int tofd)
     int tmpfd, retfd;
     tmpfd = open(filename, flags, mode);
     if (tmpfd < 0)
-	return -1;
+        return -1;
     retfd = dup2(tmpfd, tofd);	// could be -1
     close(tmpfd);
     return retfd;
@@ -40,12 +40,12 @@ static int opento(const char *filename, int flags, int mode, int tofd)
 static void test_leaky_test(void)
 {
     fprintf(stderr, "MSG leaking fd for .leaky_test.dat\n");
-    opento(".leaky_test.dat", O_WRONLY|O_CREAT, 0666, 20);
+    opento(".leaky_test.dat", O_WRONLY | O_CREAT, 0666, 20);
 }
 
 static int set_up(void)
 {
-    the_fd = opento(".leaky_fixture.dat", O_WRONLY|O_CREAT, 0666, 21);
+    the_fd = opento(".leaky_fixture.dat", O_WRONLY | O_CREAT, 0666, 21);
     return 0;
 }
 
@@ -53,8 +53,8 @@ static int tear_down(void)
 {
     if (the_fd >= 0)
     {
-	close(the_fd);
-	the_fd = -1;
+        close(the_fd);
+        the_fd = -1;
     }
     return 0;
 }

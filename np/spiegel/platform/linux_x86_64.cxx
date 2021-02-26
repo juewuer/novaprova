@@ -24,10 +24,15 @@
 #include <valgrind/valgrind.h>
 
 #ifndef MIN
-#define MIN(x, y)   ((x) < (y) ? (x) : (y))
+    #define MIN(x, y)   ((x) < (y) ? (x) : (y))
 #endif
 
-namespace np { namespace spiegel { namespace platform {
+namespace np
+{
+namespace spiegel
+{
+namespace platform
+{
 using namespace std;
 using namespace np::util;
 
@@ -37,11 +42,12 @@ static unsigned long intercept_tramp(void);
 /* The x86_6 ABI passes the first 6 arguments in registers.  Here we
  * map the argument index to the register name. */
 static int abi_regs[6] = { REG_RDI, REG_RSI, REG_RDX,
-			   REG_RCX, REG_R8, REG_R9 };
+                           REG_RCX, REG_R8, REG_R9
+                         };
 
 class x86_64_linux_call_t : public np::spiegel::call_t
 {
-private:
+  private:
     x86_64_linux_call_t() {}
 
     unsigned long *regs_;
@@ -49,16 +55,16 @@ private:
 
     unsigned long *argp(unsigned int i) const
     {
-	return (i < 6 ? &regs_[abi_regs[i]] : &stack_[i-6]);
+        return (i < 6 ? &regs_[abi_regs[i]] : &stack_[i - 6]);
     }
 
     unsigned long get_arg(unsigned int i) const
     {
-	return *argp(i);
+        return *argp(i);
     }
     void set_arg(unsigned int i, unsigned long v)
     {
-	*argp(i) = v;
+        *argp(i) = v;
     }
 
     friend unsigned long intercept_tramp(void);
@@ -74,8 +80,7 @@ static np::spiegel::platform::intstate_t *tramp_intstate;
 static bool hack1 = false;
 static bool using_int3 = false;
 
-static unsigned long
-intercept_tramp(void)
+static unsigned long intercept_tramp(void)
 {
     /*
      * We put all the local variables for the tramp into a struct so
@@ -87,21 +92,21 @@ intercept_tramp(void)
      */
     struct
     {
-	/* fake stack frame for the original function
-	 *
-	 *  - saved RBP (for intercept type PUSHBP only, the result of
-	 *		 the simulated push %rbp instruction).
-	 *  - return address
-	 *  <arg0..arg5 passed in registers>
-	 *  - arg6
-	 *  - arg7...
-	 */
-	unsigned long stack[28];
-	/* any data that we need to keep safe past the call to the
-	 * original function, goes here */
-	x86_64_linux_call_t call;
-	addr_t addr;
-	unsigned long our_rsp;
+        /* fake stack frame for the original function
+         *
+         *  - saved RBP (for intercept type PUSHBP only, the result of
+         *		 the simulated push %rbp instruction).
+         *  - return address
+         *  <arg0..arg5 passed in registers>
+         *  - arg6
+         *  - arg7...
+         */
+        unsigned long stack[28];
+        /* any data that we need to keep safe past the call to the
+         * original function, goes here */
+        x86_64_linux_call_t call;
+        addr_t addr;
+        unsigned long our_rsp;
     } frame;
     unsigned long parent_size;
     int nstack = 0;
@@ -121,9 +126,9 @@ intercept_tramp(void)
      * This was needlessly confusing.
      */
     if (hack1)
-	goto after;
+        goto after;
 
-//     printf("intercept_tramp: starting, RA=%p\n", __builtin_return_address(0));
+    //     printf("intercept_tramp: starting, RA=%p\n", __builtin_return_address(0));
 
     /*
      * The ucontext we get from the signal handler has no floating point
@@ -136,15 +141,15 @@ intercept_tramp(void)
     memset(&fpuc, 0, sizeof(fpuc));
     if (getcontext(&fpuc))
     {
-	perror("getcontext");
-	exit(1);
+        perror("getcontext");
+        exit(1);
     }
     tramp_uc.uc_mcontext.fpregs = fpuc.uc_mcontext.fpregs;
     /* Point the RBP register at our own RBP register */
     tramp_uc.uc_mcontext.gregs[REG_RBP] = fpuc.uc_mcontext.gregs[REG_RBP];
 
-//     printf("tramp: fpregs=%p\n", (void *)tramp_uc.uc_mcontext.fpregs);
-//     printf("tramp: after=%p\n", (void *)&&after);
+    //     printf("tramp: fpregs=%p\n", (void *)tramp_uc.uc_mcontext.fpregs);
+    //     printf("tramp: after=%p\n", (void *)&&after);
 
     /*
      * Build a new fake stack frame for calling the original
@@ -194,38 +199,38 @@ intercept_tramp(void)
      */
     switch (tramp_intstate->type_)
     {
-    case intstate_t::PUSHBP:
-	/* simulate the push %rbp insn which the breakpoint replaced */
-	frame.stack[nstack++] = (unsigned long)tramp_uc.uc_mcontext.gregs[REG_RBP];
-	/* setup to start executing the insn after the breakpoint */
-	tramp_uc.uc_mcontext.gregs[REG_RIP] = frame.addr + 1;
-	break;
+        case intstate_t::PUSHBP:
+            /* simulate the push %rbp insn which the breakpoint replaced */
+            frame.stack[nstack++] = (unsigned long)tramp_uc.uc_mcontext.gregs[REG_RBP];
+            /* setup to start executing the insn after the breakpoint */
+            tramp_uc.uc_mcontext.gregs[REG_RIP] = frame.addr + 1;
+            break;
 
-    case intstate_t::OTHER:
-	/* replace the breakpoint with the original insn */
-	*(unsigned char *)frame.addr = tramp_intstate->orig_;
-	VALGRIND_DISCARD_TRANSLATIONS(frame.addr, 1);
-	/* setup to start executing it again */
-	tramp_uc.uc_mcontext.gregs[REG_RIP] = frame.addr;
-	break;
+        case intstate_t::OTHER:
+            /* replace the breakpoint with the original insn */
+            *(unsigned char *)frame.addr = tramp_intstate->orig_;
+            VALGRIND_DISCARD_TRANSLATIONS(frame.addr, 1);
+            /* setup to start executing it again */
+            tramp_uc.uc_mcontext.gregs[REG_RIP] = frame.addr;
+            break;
 
-    case intstate_t::UNKNOWN:
-	break;
+        case intstate_t::UNKNOWN:
+            break;
     }
 
     /* Setup the ucontext to look like we just called the
      * function from immediately before the 'after' label */
-    frame.stack[nstack++] = (unsigned long)&&after; /* return address */
+    frame.stack[nstack++] = (unsigned long) && after; /* return address */
 
     /*
      * Copy enough of the original stack frame to make it look like
      * we have the original arguments from the seventh onwards.
      */
     parent_size = tramp_uc.uc_mcontext.gregs[REG_RBP] -
-		  (tramp_uc.uc_mcontext.gregs[REG_RSP]+8);
+                  (tramp_uc.uc_mcontext.gregs[REG_RSP] + 8);
     memcpy(&frame.stack[nstack],
-	   (void *)(tramp_uc.uc_mcontext.gregs[REG_RSP]+8),
-	   MIN(parent_size, sizeof(frame.stack)-nstack*sizeof(unsigned long)));
+           (void *)(tramp_uc.uc_mcontext.gregs[REG_RSP] + 8),
+           MIN(parent_size, sizeof(frame.stack) - nstack * sizeof(unsigned long)));
     /* setup the ucontext's RSP register to point at the new stack frame */
     tramp_uc.uc_mcontext.gregs[REG_RSP] = (unsigned long)&frame;
 
@@ -239,40 +244,40 @@ intercept_tramp(void)
      * Finally it should also be able to longjmp() out without
      * drama, e.g. as a side effect of failing a NP_ASSERT().
      */
-    frame.call.stack_ = frame.stack+nstack;
+    frame.call.stack_ = frame.stack + nstack;
     frame.call.regs_ = (unsigned long *)tramp_uc.uc_mcontext.gregs;
     intercept_t::dispatch_before(frame.addr, frame.call);
     if (frame.call.skip_)
-	return frame.call.retval_;	/* before() requested skip() */
+        return frame.call.retval_;	/* before() requested skip() */
     if (frame.call.redirect_)
     {
-	/* before() requested redirect, so setup the context to call
-	 * that function instead. */
-	tramp_uc.uc_mcontext.gregs[REG_RIP] = frame.call.redirect_;
-	switch (tramp_intstate->type_)
-	{
-	case intstate_t::PUSHBP:
-	    /* The new function won't be intercepted (well, we hope not)
-	     * so we need to undo emulation of 'push %rbp'.  */
-	    tramp_uc.uc_mcontext.gregs[REG_RSP] += 8;
-	    break;
-	case intstate_t::OTHER:
-	    /* Re-insert the breakpoint */
-	    *(unsigned char *)frame.addr = (using_int3 ? INSN_INT3 : INSN_HLT);
-	    VALGRIND_DISCARD_TRANSLATIONS(frame.addr, 1);
-	    break;
-	case intstate_t::UNKNOWN:
-	    break;
-	}
+        /* before() requested redirect, so setup the context to call
+         * that function instead. */
+        tramp_uc.uc_mcontext.gregs[REG_RIP] = frame.call.redirect_;
+        switch (tramp_intstate->type_)
+        {
+            case intstate_t::PUSHBP:
+                /* The new function won't be intercepted (well, we hope not)
+                 * so we need to undo emulation of 'push %rbp'.  */
+                tramp_uc.uc_mcontext.gregs[REG_RSP] += 8;
+                break;
+            case intstate_t::OTHER:
+                /* Re-insert the breakpoint */
+                *(unsigned char *)frame.addr = (using_int3 ? INSN_INT3 : INSN_HLT);
+                VALGRIND_DISCARD_TRANSLATIONS(frame.addr, 1);
+                break;
+            case intstate_t::UNKNOWN:
+                break;
+        }
     }
     /* Save our own %rsp for later */
     __asm__ volatile("movq %%rsp, %0" : "=m"(frame.our_rsp));
 
     /* switch to the ucontext */
-//     printf("tramp: about to setcontext(RIP=0x%016lx RSP=0x%016lx RBP=0x%016lx)\n",
-// 	   (unsigned long)tramp_uc.uc_mcontext.gregs[REG_RIP],
-// 	   (unsigned long)tramp_uc.uc_mcontext.gregs[REG_RSP],
-// 	   (unsigned long)tramp_uc.uc_mcontext.gregs[REG_RBP]);
+    //     printf("tramp: about to setcontext(RIP=0x%016lx RSP=0x%016lx RBP=0x%016lx)\n",
+    // 	   (unsigned long)tramp_uc.uc_mcontext.gregs[REG_RIP],
+    // 	   (unsigned long)tramp_uc.uc_mcontext.gregs[REG_RSP],
+    // 	   (unsigned long)tramp_uc.uc_mcontext.gregs[REG_RBP]);
     setcontext(&tramp_uc);
     /* notreached - setcontext() should not return, unless setting
      * the signal mask failed, which it doesn't */
@@ -302,16 +307,16 @@ after:
 
     switch (tramp_intstate->type_)
     {
-    case intstate_t::PUSHBP:
-	/* we're cool */
-	break;
-    case intstate_t::OTHER:
-	/* Re-insert the breakpoint */
-	*(unsigned char *)frame.addr = (using_int3 ? INSN_INT3 : INSN_HLT);
-	VALGRIND_DISCARD_TRANSLATIONS(frame.addr, 1);
-	break;
-    case intstate_t::UNKNOWN:
-	break;
+        case intstate_t::PUSHBP:
+            /* we're cool */
+            break;
+        case intstate_t::OTHER:
+            /* Re-insert the breakpoint */
+            *(unsigned char *)frame.addr = (using_int3 ? INSN_INT3 : INSN_HLT);
+            VALGRIND_DISCARD_TRANSLATIONS(frame.addr, 1);
+            break;
+        case intstate_t::UNKNOWN:
+            break;
     }
 
     /*
@@ -324,18 +329,17 @@ after:
     return frame.call.retval_;
 }
 
-static void
-handle_signal(int sig, siginfo_t *si, void *vuc)
+static void handle_signal(int sig, siginfo_t *si, void *vuc)
 {
     ucontext_t *uc = (ucontext_t *)vuc;
 
-//     printf("handle_signal: signo=%d code=%d pid=%d RIP 0x%016lx RBP 0x%016lx RSP 0x%016lx\n",
-// 	    si->si_signo,
-// 	    si->si_code,
-// 	    (int)si->si_pid,
-// 	    (unsigned long)uc->uc_mcontext.gregs[REG_RIP],
-// 	    (unsigned long)uc->uc_mcontext.gregs[REG_RBP],
-// 	    (unsigned long)uc->uc_mcontext.gregs[REG_RSP]);
+    //     printf("handle_signal: signo=%d code=%d pid=%d RIP 0x%016lx RBP 0x%016lx RSP 0x%016lx\n",
+    // 	    si->si_signo,
+    // 	    si->si_code,
+    // 	    (int)si->si_pid,
+    // 	    (unsigned long)uc->uc_mcontext.gregs[REG_RIP],
+    // 	    (unsigned long)uc->uc_mcontext.gregs[REG_RBP],
+    // 	    (unsigned long)uc->uc_mcontext.gregs[REG_RSP]);
 
     /* double-check that this is not some spurious signal */
     unsigned char *eip;
@@ -343,31 +347,31 @@ handle_signal(int sig, siginfo_t *si, void *vuc)
     eip = (unsigned char *)(uc->uc_mcontext.gregs[REG_RIP]);
     if (using_int3)
     {
-	if (sig != SIGTRAP || si->si_signo != SIGTRAP)
-	    return;	    /* we got a bogus signal, wtf? */
-	if (si->si_code != SI_KERNEL /* natural */ &&
-	    si->si_code != TRAP_BRKPT /* via Valgrind */)
-	    goto wtf;	    /* this is the code we expect from HLT traps */
-	eip--;
-	if (*eip != INSN_INT3)
-	    goto wtf;	    /* not an INT3 */
+        if (sig != SIGTRAP || si->si_signo != SIGTRAP)
+            return;	    /* we got a bogus signal, wtf? */
+        if (si->si_code != SI_KERNEL /* natural */ &&
+                si->si_code != TRAP_BRKPT /* via Valgrind */)
+            goto wtf;	    /* this is the code we expect from HLT traps */
+        eip--;
+        if (*eip != INSN_INT3)
+            goto wtf;	    /* not an INT3 */
     }
     else
     {
-	if (sig != SIGSEGV || si->si_signo != SIGSEGV)
-	    return;	    /* we got a bogus signal, wtf? */
-	if (si->si_code != SI_KERNEL)
-	    goto wtf;	    /* this is the code we expect from HLT traps */
-	if (*eip != INSN_HLT)
-	    goto wtf;	    /* not an HLT */
+        if (sig != SIGSEGV || si->si_signo != SIGSEGV)
+            return;	    /* we got a bogus signal, wtf? */
+        if (si->si_code != SI_KERNEL)
+            goto wtf;	    /* this is the code we expect from HLT traps */
+        if (*eip != INSN_HLT)
+            goto wtf;	    /* not an HLT */
     }
     if (si->si_pid != 0)
-	return;	    /* some process sent us SIGSEGV, wtf? */
+        return;	    /* some process sent us SIGSEGV, wtf? */
     tramp_intstate = intercept_t::get_intstate((np::spiegel::addr_t)eip);
     if (!tramp_intstate)
-	goto wtf;   /* not an installed intercept */
+        goto wtf;   /* not an installed intercept */
 
-//     printf("handle_signal: trap from intercept breakpoint\n");
+    //     printf("handle_signal: trap from intercept breakpoint\n");
     /* stash the ucontext for the tramp */
     /* TODO: if we were concerned about the MP case we would
      * push build a stack frame containing this context */
@@ -376,7 +380,7 @@ handle_signal(int sig, siginfo_t *si, void *vuc)
      * the signal into the tramp instead of the
      * original function */
     uc->uc_mcontext.gregs[REG_RIP] = (unsigned long)&intercept_tramp;
-//     printf("handle_signal: ending\n");
+    //     printf("handle_signal: ending\n");
 
     return;
 
@@ -388,51 +392,50 @@ wtf:
 }
 
 
-int
-install_intercept(np::spiegel::addr_t addr, intstate_t &state, std::string &err)
+int install_intercept(np::spiegel::addr_t addr, intstate_t& state, std::string& err)
 {
     int r;
 
     switch (*(unsigned char *)addr)
     {
-    case INSN_PUSH_RBP:
-	/* non-leaf function, all is good */
-	state.type_ = intstate_t::PUSHBP;
-	break;
-    case INSN_HLT:
-    case INSN_INT3:
-	/* already intercepted, can handle this too */
-	break;
-    default:
-	state.type_ = intstate_t::OTHER;
-	break;
+        case INSN_PUSH_RBP:
+            /* non-leaf function, all is good */
+            state.type_ = intstate_t::PUSHBP;
+            break;
+        case INSN_HLT:
+        case INSN_INT3:
+            /* already intercepted, can handle this too */
+            break;
+        default:
+            state.type_ = intstate_t::OTHER;
+            break;
     }
     state.orig_ = *(unsigned char *)addr;
 
     r = text_map_writable(addr, 1);
     if (r)
     {
-	err = "cannot make text page writable";
-	return -1;
+        err = "cannot make text page writable";
+        return -1;
     }
 
     static bool installed_sigaction = false;
     if (!installed_sigaction)
     {
-	struct sigaction act;
-	memset(&act, 0, sizeof(act));
-	act.sa_sigaction = handle_signal;
-	act.sa_flags |= SA_SIGINFO;
-	if (RUNNING_ON_VALGRIND)
-	    using_int3 = true;
-	sigaction((using_int3 ? SIGTRAP : SIGSEGV), &act, NULL);
-	if (r < 0)
-	{
-	    perror("np: sigaction");
-	    err = "cannot install signal handler";
-	    return -1;
-	}
-	installed_sigaction = true;
+        struct sigaction act;
+        memset(&act, 0, sizeof(act));
+        act.sa_sigaction = handle_signal;
+        act.sa_flags |= SA_SIGINFO;
+        if (RUNNING_ON_VALGRIND)
+            using_int3 = true;
+        sigaction((using_int3 ? SIGTRAP : SIGSEGV), &act, NULL);
+        if (r < 0)
+        {
+            perror("np: sigaction");
+            err = "cannot install signal handler";
+            return -1;
+        }
+        installed_sigaction = true;
     }
 
     /* TODO: install the sig handler only when there are
@@ -443,22 +446,23 @@ install_intercept(np::spiegel::addr_t addr, intstate_t &state, std::string &err)
     return 0;
 }
 
-int
-uninstall_intercept(np::spiegel::addr_t addr, intstate_t &state, std::string &err)
+int uninstall_intercept(np::spiegel::addr_t addr, intstate_t& state, std::string& err)
 {
     if (*(unsigned char *)addr != (using_int3 ? INSN_INT3 : INSN_HLT))
     {
-	err = "intercept not installed";
-	return -1;
+        err = "intercept not installed";
+        return -1;
     }
     *(unsigned char *)addr = state.orig_;
     VALGRIND_DISCARD_TRANSLATIONS(addr, 1);
     int r = text_restore(addr, 1);
     if (r < 0)
-	err = "cannot restore text page";
+        err = "cannot restore text page";
     return r;
 }
 
 // close namespaces
-}; }; };
+};
+};
+};
 

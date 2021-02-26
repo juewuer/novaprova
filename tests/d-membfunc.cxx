@@ -16,9 +16,9 @@
 
 class coffee
 {
-public:
+  public:
     int keffiyeh(int x);
-private:
+  private:
     static coffee *milkshk;
     static int sartorial;
 };
@@ -26,7 +26,7 @@ private:
 int coffee::sartorial = 42;
 int coffee::keffiyeh(int x)
 {
-    return x+42;
+    return x + 42;
 }
 
 int main(int argc, char **argv)

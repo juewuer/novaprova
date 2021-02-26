@@ -20,28 +20,41 @@
 #include "np/testnode.hxx"
 #include "np/plan.hxx"
 
-namespace np {
+namespace np
+{
 
 class job_t : public np::util::zalloc
 {
-public:
-    job_t(const plan_t::iterator &);
+  public:
+    job_t(const plan_t::iterator&);
     ~job_t();
 
     std::string as_string() const;
-    testnode_t *get_node() const { return node_; }
+    testnode_t *get_node() const
+    {
+        return node_;
+    }
     void pre_run(bool in_parent);
     void post_run(bool in_parent);
 
-    int64_t get_start() const { return start_; }
+    int64_t get_start() const
+    {
+        return start_;
+    }
     int64_t get_elapsed() const;
 
-    void set_stdout_path(const char *path) { stdout_path_ = std::string(path); }
-    void set_stderr_path(const char *path) { stderr_path_ = std::string(path); }
+    void set_stdout_path(const char *path)
+    {
+        stdout_path_ = std::string(path);
+    }
+    void set_stderr_path(const char *path)
+    {
+        stderr_path_ = std::string(path);
+    }
     std::string get_stdout() const;
     std::string get_stderr() const;
 
-private:
+  private:
     static unsigned int next_id_;
 
     unsigned int id_;

@@ -42,14 +42,14 @@ static void setup_breakpoint(struct breakpoint *bp, void *addr)
 
     /* adjust region to the enclosing page */
     if (!page_size)
-	page_size = sysconf(_SC_PAGESIZE);
+        page_size = sysconf(_SC_PAGESIZE);
     addr = (void *)((unsigned long)addr - ((unsigned long)addr % page_size));
 
-    r = mprotect(addr, page_size, PROT_READ|PROT_WRITE|PROT_EXEC);
+    r = mprotect(addr, page_size, PROT_READ | PROT_WRITE | PROT_EXEC);
     if (r)
     {
-	perror("mprotect");
-	exit(1);
+        perror("mprotect");
+        exit(1);
     }
 
     printf("Inserting an INT3 instruction at the first byte of the function\n");
@@ -63,39 +63,39 @@ static void handle_sigtrap(int sig, siginfo_t *si, void *vuc)
     struct breakpoint *bp = &thebp;
 
     printf("handle_sigtrap: signo=%d errno=%d code=%d\n",
-	    si->si_signo,
-	    si->si_errno,
-	    si->si_code);
+           si->si_signo,
+           si->si_errno,
+           si->si_code);
     // it turns out that neither si_pid nor si_address are meaningful
     // for SIGTRAP
     if (si->si_signo != SIGTRAP)
-	return;
-//     if (si->si_code != SI_KERNEL)
-// 	return;
+        return;
+    //     if (si->si_code != SI_KERNEL)
+    // 	return;
     printf("handle_sigtrap: faulted at EIP 0x%08lx ESP 0x%08lx\n",
-	    (unsigned long)uc->uc_mcontext.gregs[REG_EIP],
-	    (unsigned long)uc->uc_mcontext.gregs[REG_ESP]);
+           (unsigned long)uc->uc_mcontext.gregs[REG_EIP],
+           (unsigned long)uc->uc_mcontext.gregs[REG_ESP]);
     switch (bp->state)
     {
-    case 0:
-	/* first trap, from INT3 insn */
-	printf("handle_sigtrap: HIT BREAKPOINT\n");
-	/* temporarily remove the INT3 insn */
-	*(unsigned char *)bp->addr = bp->old_insn;
-	/* setup the EIP register so we execute that insn */
-	uc->uc_mcontext.gregs[REG_EIP]--;
-	/* setup the EFLAGS register to single-step */
-	uc->uc_mcontext.gregs[REG_EFL] |= 0x100;    /* TF Trace Flag */
-	bp->state = 1;
-	break;
-    case 1:
-	/* single step trap due to TF in EFLAGS */
-	bp->state = 0;
-	/* restore the INT3 insn */
-	*(unsigned char *)bp->addr = 0xcc;
-	/* stop single-stepping */
-	uc->uc_mcontext.gregs[REG_EFL] &= ~0x100;    /* TF Trace Flag */
-	break;
+        case 0:
+            /* first trap, from INT3 insn */
+            printf("handle_sigtrap: HIT BREAKPOINT\n");
+            /* temporarily remove the INT3 insn */
+            *(unsigned char *)bp->addr = bp->old_insn;
+            /* setup the EIP register so we execute that insn */
+            uc->uc_mcontext.gregs[REG_EIP]--;
+            /* setup the EFLAGS register to single-step */
+            uc->uc_mcontext.gregs[REG_EFL] |= 0x100;    /* TF Trace Flag */
+            bp->state = 1;
+            break;
+        case 1:
+            /* single step trap due to TF in EFLAGS */
+            bp->state = 0;
+            /* restore the INT3 insn */
+            *(unsigned char *)bp->addr = 0xcc;
+            /* stop single-stepping */
+            uc->uc_mcontext.gregs[REG_EFL] &= ~0x100;    /* TF Trace Flag */
+            break;
     }
     printf("handle_sigtrap: ending\n");
     got_sigtrap++;
@@ -110,8 +110,8 @@ int the_function(int x, int y)
     printf("Start of the_function\n");
     for (i = 0 ; i < x ; i++)
     {
-	y *= 5;
-	y--;
+        y *= 5;
+        y--;
     }
     printf("End of the_function\n");
     return y;

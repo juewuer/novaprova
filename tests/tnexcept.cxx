@@ -24,14 +24,20 @@ namespace foo
 
 class exception : public std::exception
 {
-private:
+  private:
     char *msg_;
 
-public:
+  public:
     exception() throw() : msg_(0) {}
     exception(const char *m) throw() : msg_(m ? strdup(m) : 0) {}
-    ~exception() throw() { free(msg_); }
-    const char* what() const throw() { return msg_; }
+    ~exception() throw()
+    {
+        free(msg_);
+    }
+    const char *what() const throw()
+    {
+        return msg_;
+    }
 };
 
 void bar() throw(exception)
@@ -52,12 +58,12 @@ static void test_caught_exception(void)
 {
     try
     {
-	fprintf(stderr, "MSG before call to bar, in try block\n");
-	foo::bar();
-	fprintf(stderr, "MSG after call to bar, in try block\n");
+        fprintf(stderr, "MSG before call to bar, in try block\n");
+        foo::bar();
+        fprintf(stderr, "MSG after call to bar, in try block\n");
     }
-    catch (foo::exception &e)
+    catch (foo::exception& e)
     {
-	fprintf(stderr, "MSG caught exception: %s\n", e.what());
+        fprintf(stderr, "MSG caught exception: %s\n", e.what());
     }
 }

@@ -20,9 +20,12 @@
 #include "reference.hxx"
 #include "reader.hxx"
 
-namespace np {
-namespace spiegel {
-namespace dwarf {
+namespace np
+{
+namespace spiegel
+{
+namespace dwarf
+{
 
 class abbrev_t;
 class walker_t;
@@ -30,71 +33,83 @@ class section_t;
 
 class compile_unit_t
 {
-private:
-    enum {
-	header_length = 11,	// this might depend on version
+  private:
+    enum
+    {
+        header_length = 11,	// this might depend on version
 
-	MIN_DWARF_VERSION = 2,
-	MAX_DWARF_VERSION = 4
+        MIN_DWARF_VERSION = 2,
+        MAX_DWARF_VERSION = 4
     };
-public:
+  public:
     compile_unit_t(uint32_t idx, uint32_t loidx)
-     :  index_(idx),
-        loindex_(loidx)
+        :  index_(idx),
+           loindex_(loidx)
     {}
 
     ~compile_unit_t()
     {}
 
-    bool read_header(reader_t &r);
-    bool read_compile_unit_entry(walker_t &w);
-    void read_abbrevs(reader_t &r);
+    bool read_header(reader_t& r);
+    bool read_compile_unit_entry(walker_t& w);
+    void read_abbrevs(reader_t& r);
     void dump_abbrevs() const;
 
-    uint32_t get_index() const { return index_; }
-    uint32_t get_link_object_index() const { return loindex_; }
+    uint32_t get_index() const
+    {
+        return index_;
+    }
+    uint32_t get_link_object_index() const
+    {
+        return loindex_;
+    }
     const char *get_executable() const;
     const section_t *get_section(uint32_t) const;
-    uint16_t get_version() const { return version_; }
+    uint16_t get_version() const
+    {
+        return version_;
+    }
 
     reference_t make_reference(uint32_t off) const
     {
-	reference_t ref;
-	ref.cu = index_;
-	ref.offset = off;
-	return ref;
+        reference_t ref;
+        ref.cu = index_;
+        ref.offset = off;
+        return ref;
     }
     reference_t make_root_reference() const
     {
-	reference_t ref;
-	ref.cu = index_;
-	ref.offset = header_length;
-	return ref;
+        reference_t ref;
+        ref.cu = index_;
+        ref.offset = header_length;
+        return ref;
     }
 
     reader_t get_contents() const
     {
-	reader_t r = reader_;
-	r.skip(header_length);
-	return r;
+        reader_t r = reader_;
+        r.skip(header_length);
+        return r;
     }
 
     const abbrev_t *get_abbrev(uint32_t code) const
     {
-	return (code >= abbrevs_.size() ? 0 : abbrevs_[code]);
+        return (code >= abbrevs_.size() ? 0 : abbrevs_[code]);
     }
 
-private:
+  private:
     uint32_t index_;
     uint32_t loindex_;
     uint16_t version_;
     bool is64_;		    // new 64b format introduced in DWARF3
     reader_t reader_;	    // for whole including header
     uint32_t abbrevs_offset_;
-    std::vector<abbrev_t*> abbrevs_;
+    std::vector<abbrev_t *> abbrevs_;
 };
 
 // close namespaces
-}; }; };
+};
+};
+};
 
 #endif // __np_spiegel_dwarf_compile_unit_hxx__

@@ -19,32 +19,33 @@
 #include "np/util/common.hxx"
 #include <regex.h>
 
-namespace np {
+namespace np
+{
 
 class classifier_t : public np::util::zalloc
 {
-public:
+  public:
     classifier_t()
     {
-	results_[0] = false;
-	results_[1] = true;
+        results_[0] = false;
+        results_[1] = true;
     }
     ~classifier_t()
     {
-	xfree(re_);
-	regfree(&compiled_re_);
+        xfree(re_);
+        regfree(&compiled_re_);
     }
 
     bool set_regexp(const char *, bool);
     void set_results(int failed, int matched)
     {
-	results_[0] = failed;
-	results_[1] = matched;
+        results_[0] = failed;
+        results_[1] = matched;
     }
     int classify(const char *, char *, size_t) const;
     const char *error_string() const;
 
-private:
+  private:
     char *re_;
     regex_t compiled_re_;
     int results_[2];

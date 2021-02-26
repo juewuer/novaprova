@@ -26,20 +26,19 @@ using namespace np::util;
 
 static char oldcwd[PATH_MAX];
 
-int
-setup(void)
+int setup(void)
 {
     struct stat sb;
     int r;
 
     r = system("rm -rf "TESTDIR);
     if (r)
-	return -1;
+        return -1;
     r = stat(TESTDIR, &sb);
     if (r == 0 || errno != ENOENT)
     {
-	perror(TESTDIR);
-	return -1;
+        perror(TESTDIR);
+        return -1;
     }
     mkdir(TESTDIR, 0777);
     mkdir(TESTDIR"/dir3", 0777);
@@ -47,53 +46,51 @@ setup(void)
     r = stat(TESTDIR, &sb);
     if (r != 0)
     {
-	perror(TESTDIR);
-	return -1;
+        perror(TESTDIR);
+        return -1;
     }
 
     if (getcwd(oldcwd, sizeof(oldcwd)) == NULL)
     {
-	perror("getcwd");
-	return -1;
+        perror("getcwd");
+        return -1;
     }
     if (chdir(TESTDIR"/dir3/dir4") < 0)
     {
-	perror(TESTDIR"/dir3/dir4");
-	return -1;
+        perror(TESTDIR"/dir3/dir4");
+        return -1;
     }
 
     return 0;
 }
 
-int
-teardown()
+int teardown()
 {
     int r;
 
     if (oldcwd[0])
-	chdir(oldcwd);
+        chdir(oldcwd);
 
     r = system("rm -rf "TESTDIR);
     if (r)
-	return -1;
+        return -1;
     return 0;
 }
 
-int
-main(int argc, char **argv __attribute__((unused)))
+int main(int argc, char **argv __attribute__((unused)))
 {
     argv0 = argv[0];
     if (argc != 1)
-	fatal("Usage: %s filenames\n", argv0);
+        fatal("Usage: %s filenames\n", argv0);
 
 #define TESTCASE(in, expected) \
-{ \
-    np::util::filename_t _in(in); \
-    BEGIN("absolute(\"%s\")", _in.c_str()); \
-    np::util::filename_t _out = _in.make_absolute(); \
-    CHECK(!strcmp(_out.c_str(), expected)); \
-    END; \
-}
+    { \
+        np::util::filename_t _in(in); \
+        BEGIN("absolute(\"%s\")", _in.c_str()); \
+        np::util::filename_t _out = _in.make_absolute(); \
+        CHECK(!strcmp(_out.c_str(), expected)); \
+        END; \
+    }
     TESTCASE("/foo/bar", "/foo/bar");
     TESTCASE("/foo", "/foo");
     TESTCASE("/", "/");
@@ -113,13 +110,13 @@ main(int argc, char **argv __attribute__((unused)))
 #undef TESTCASE
 
 #define TESTCASE(in, expected) \
-{ \
-    np::util::filename_t _in(in); \
-    BEGIN("normalise(\"%s\")", _in.c_str()); \
-    np::util::filename_t _out = _in.normalise(); \
-    CHECK(!strcmp(_out.c_str(), expected)); \
-    END; \
-}
+    { \
+        np::util::filename_t _in(in); \
+        BEGIN("normalise(\"%s\")", _in.c_str()); \
+        np::util::filename_t _out = _in.normalise(); \
+        CHECK(!strcmp(_out.c_str(), expected)); \
+        END; \
+    }
     TESTCASE("/foo/bar", "/foo/bar");
     TESTCASE("//foo////bar", "/foo/bar");
     TESTCASE("/", "/");

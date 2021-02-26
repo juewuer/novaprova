@@ -24,81 +24,82 @@ using namespace np::util;
 #if 0
 static unsigned long top_of_stack;
 
-static void
-__dump_stack(unsigned long ebp, unsigned long eip)
+static void __dump_stack(unsigned long ebp, unsigned long eip)
 {
     unsigned int n = 0;
     while (ebp < top_of_stack)
     {
-	printf("%u EBP 0x%08lx EIP 0x%08lx", n, ebp, eip);
-	np::spiegel::location_t loc;
-	if (np::spiegel::describe_address(eip, loc))
-	    printf(" <%s+0x%x> at %s:%u",
-		  loc.function_ ? loc.function_->get_name().c_str() : "???",
-		  loc.offset_,
-		  loc.compile_unit_->get_absolute_path().basename().c_str(),
-		  loc.line_);
-	printf("\n");
-	eip = ((unsigned long *)ebp)[1];
-	ebp = ((unsigned long *)ebp)[0];
-	n++;
+        printf("%u EBP 0x%08lx EIP 0x%08lx", n, ebp, eip);
+        np::spiegel::location_t loc;
+        if (np::spiegel::describe_address(eip, loc))
+            printf(" <%s+0x%x> at %s:%u",
+                   loc.function_ ? loc.function_->get_name().c_str() : "???",
+                   loc.offset_,
+                   loc.compile_unit_->get_absolute_path().basename().c_str(),
+                   loc.line_);
+        printf("\n");
+        eip = ((unsigned long *)ebp)[1];
+        ebp = ((unsigned long *)ebp)[0];
+        n++;
     }
 }
 
 #define DUMP_STACK \
     { \
-	register unsigned long ebp; \
-	register unsigned long eip; \
-	__asm__ volatile("mov %%ebp,%0" : "=r"(ebp)); \
-	__asm__ volatile("call .Lxx; .Lxx: popl %0" : "=r"(eip)); \
-	__dump_stack(ebp, eip); \
+        register unsigned long ebp; \
+        register unsigned long eip; \
+        __asm__ volatile("mov %%ebp,%0" : "=r"(ebp)); \
+        __asm__ volatile("call .Lxx; .Lxx: popl %0" : "=r"(eip)); \
+        __dump_stack(ebp, eip); \
     }
 #endif
 
 static int the_function_count = 0;
 
-int
-the_function(int x, int y)
+int the_function(int x, int y)
 {
     int i;
 
-    if (is_verbose()) printf("Start of the_function, x=%d y=%d\n", x, y);
+    if (is_verbose())
+        printf("Start of the_function, x=%d y=%d\n", x, y);
     the_function_count++;
     for (i = 0 ; i < x ; i++)
     {
-	y *= 5;
-	y--;
+        y *= 5;
+        y--;
     }
-    if (is_verbose()) printf("End of the_function, returning %d\n", y);
+    if (is_verbose())
+        printf("End of the_function, returning %d\n", y);
     return y;
 }
 
 static int another_function_count = 0;
 
-int
-another_function(int x, int y)
+int another_function(int x, int y)
 {
     int i;
 
-    if (is_verbose()) printf("Start of another_function, x=%d y=%d\n", x, y);
+    if (is_verbose())
+        printf("Start of another_function, x=%d y=%d\n", x, y);
     another_function_count++;
     for (i = 0 ; i < x ; i++)
     {
-	y *= 2;
-	y++;
+        y *= 2;
+        y++;
     }
-    if (is_verbose()) printf("End of another_function, returning %d\n", y);
+    if (is_verbose())
+        printf("End of another_function, returning %d\n", y);
     return y;
 }
 
 class intercept_tester_t : public np::spiegel::intercept_t
 {
-public:
+  public:
     intercept_tester_t();
     ~intercept_tester_t();
 
-    void before(np::spiegel::call_t &);
-    void after(np::spiegel::call_t &);
+    void before(np::spiegel::call_t&);
+    void after(np::spiegel::call_t&);
     void reset_counters();
 
     unsigned int after_count;
@@ -110,9 +111,9 @@ public:
 };
 
 intercept_tester_t::intercept_tester_t()
- :  intercept_t((np::spiegel::addr_t)&the_function)
-    // we don't initialise the counts to 0 because the
-    // inherited operator new does that.
+    :  intercept_t((np::spiegel::addr_t) & the_function)
+       // we don't initialise the counts to 0 because the
+       // inherited operator new does that.
 {
 }
 
@@ -120,40 +121,42 @@ intercept_tester_t::~intercept_tester_t()
 {
 }
 
-void
-intercept_tester_t::before(np::spiegel::call_t &call)
+void intercept_tester_t::before(np::spiegel::call_t& call)
 {
     x = call.get_arg(0);
     y = call.get_arg(1);
     before_count++;
-    if (is_verbose()) printf("BEFORE x=%d y=%d\n", x, y);
+    if (is_verbose())
+        printf("BEFORE x=%d y=%d\n", x, y);
     if (test_skip)
     {
-	if (is_verbose()) printf("SKIPPING r=%d\n", nr);
-	call.skip(nr);
+        if (is_verbose())
+            printf("SKIPPING r=%d\n", nr);
+        call.skip(nr);
     }
     if (test_redirect)
     {
-	if (is_verbose()) printf("REDIRECTING to another_function\n");
-	call.redirect((np::spiegel::addr_t)&another_function);
+        if (is_verbose())
+            printf("REDIRECTING to another_function\n");
+        call.redirect((np::spiegel::addr_t)&another_function);
     }
 }
 
-void
-intercept_tester_t::after(np::spiegel::call_t &call)
+void intercept_tester_t::after(np::spiegel::call_t& call)
 {
     r = call.get_retval();
     after_count++;
-    if (is_verbose()) printf("AFTER, returned %d\n", r);
+    if (is_verbose())
+        printf("AFTER, returned %d\n", r);
     if (test_set_retval)
     {
-	if (is_verbose()) printf("SETTING RETVAL to %d\n", nr);
-	call.set_retval((unsigned long)nr);
+        if (is_verbose())
+            printf("SETTING RETVAL to %d\n", nr);
+        call.set_retval((unsigned long)nr);
     }
 }
 
-void
-intercept_tester_t::reset_counters()
+void intercept_tester_t::reset_counters()
 {
     x = 0;
     y = 0;
@@ -170,36 +173,35 @@ intercept_tester_t::reset_counters()
 
 int moe(int x, int y)
 {
-    int r = the_function(x+1, y+1);
-    return r-1;
+    int r = the_function(x + 1, y + 1);
+    return r - 1;
 }
 
 int curly(int x, int y)
 {
-    int r = moe(x+1, y+1);
-    return r-1;
+    int r = moe(x + 1, y + 1);
+    return r - 1;
 }
 
 int larry(int x, int y)
 {
-    int r = curly(x+1, y+1);
-    return r-1;
+    int r = curly(x + 1, y + 1);
+    return r - 1;
 }
 
-int
-wide_call(int a1, int a2, int a3,
-	  int a4, int a5, int a6,
-	  int a7, int a8, int a9,
-	  int a10, int a11, int a12)
+int wide_call(int a1, int a2, int a3,
+              int a4, int a5, int a6,
+              int a7, int a8, int a9,
+              int a10, int a11, int a12)
 {
-    return a1+a2+a3+a4+a5+a6+a7+a8+a9+a10+a11+a12;
+    return a1 + a2 + a3 + a4 + a5 + a6 + a7 + a8 + a9 + a10 + a11 + a12;
 }
 
 class wide_intercept_tester_t : public np::spiegel::intercept_t
 {
-public:
+  public:
     wide_intercept_tester_t()
-     :  intercept_t((np::spiegel::addr_t)&wide_call)
+        :  intercept_t((np::spiegel::addr_t) & wide_call)
     {
     }
     ~wide_intercept_tester_t()
@@ -208,17 +210,19 @@ public:
 
     int x[12], r;
 
-    void before(np::spiegel::call_t &call)
+    void before(np::spiegel::call_t& call)
     {
-	int i;
-	for (i = 0 ; i < 12 ; i++)
-	    x[i] = call.get_arg(i);
-	if (is_verbose()) printf("BEFORE\n");
+        int i;
+        for (i = 0 ; i < 12 ; i++)
+            x[i] = call.get_arg(i);
+        if (is_verbose())
+            printf("BEFORE\n");
     }
-    void after(np::spiegel::call_t &call)
+    void after(np::spiegel::call_t& call)
     {
-	r = call.get_retval();
-	if (is_verbose()) printf("AFTER, returning %d\n", r);
+        r = call.get_retval();
+        if (is_verbose())
+            printf("AFTER, returning %d\n", r);
     }
 };
 
@@ -226,9 +230,9 @@ typedef void (*fn_t)(void);
 
 class libc_intercept_tester_t : public np::spiegel::intercept_t
 {
-public:
+  public:
     libc_intercept_tester_t(fn_t addr, const char *name)
-     :  intercept_t((np::spiegel::addr_t)addr, name)
+        :  intercept_t((np::spiegel::addr_t)addr, name)
     {
     }
     ~libc_intercept_tester_t()
@@ -238,34 +242,37 @@ public:
     unsigned int after_count;
     unsigned int before_count;
 
-    void before(np::spiegel::call_t &call)
+    void before(np::spiegel::call_t& call)
     {
-	if (is_verbose()) printf("BEFORE %s\n", get_name());
-	before_count++;
+        if (is_verbose())
+            printf("BEFORE %s\n", get_name());
+        before_count++;
     }
-    void after(np::spiegel::call_t &call)
+    void after(np::spiegel::call_t& call)
     {
-	if (is_verbose()) printf("AFTER %s\n", get_name());
-	after_count++;
+        if (is_verbose())
+            printf("AFTER %s\n", get_name());
+        after_count++;
     }
 };
 
-int
-main(int argc, char **argv __attribute__((unused)))
+int main(int argc, char **argv __attribute__((unused)))
 {
 #if 0
     top_of_stack = (unsigned long)&argc;
 #endif
     if (argc > 1)
     {
-	fatal("Usage: testrunner intercept\n");
+        fatal("Usage: testrunner intercept\n");
     }
 
-    if (is_verbose()) printf("main, about to create state_t\n");
+    if (is_verbose())
+        printf("main, about to create state_t\n");
     np::spiegel::dwarf::state_t state;
-    if (is_verbose()) printf("main, about to call add_self\n");
+    if (is_verbose())
+        printf("main, about to call add_self\n");
     if (!state.add_self())
-	return 1;
+        return 1;
 
     intercept_tester_t *it;
     int r;

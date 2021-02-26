@@ -19,7 +19,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-namespace np {
+namespace np
+{
 using namespace std;
 
 static void mock_exit(int status)
@@ -32,8 +33,8 @@ static void mock_exit(int status)
 void init_exit_intercepts(testnode_t *tn)
 {
     tn->add_mock((np::spiegel::addr_t)&exit,
-		 "exit",
-		 (np::spiegel::addr_t)&mock_exit);
+                 "exit",
+                 (np::spiegel::addr_t)&mock_exit);
 }
 
 // close the namespace

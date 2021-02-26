@@ -15,20 +15,27 @@
  */
 #include "np/types.hxx"
 
-namespace np {
+namespace np
+{
 
-const char *
-as_string(functype_t type)
+const char *as_string(functype_t type)
 {
     switch (type)
     {
-    case FT_UNKNOWN: return "unknown";
-    case FT_BEFORE: return "before";
-    case FT_TEST: return "test";
-    case FT_AFTER: return "after";
-    case FT_MOCK: return "mock";
-    case FT_PARAM: return "param";
-    default: return "INTERNAL ERROR!";
+        case FT_UNKNOWN:
+            return "unknown";
+        case FT_BEFORE:
+            return "before";
+        case FT_TEST:
+            return "test";
+        case FT_AFTER:
+            return "after";
+        case FT_MOCK:
+            return "mock";
+        case FT_PARAM:
+            return "param";
+        default:
+            return "INTERNAL ERROR!";
     }
 }
 

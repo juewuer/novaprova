@@ -17,14 +17,16 @@
 #include "np/util/profile.hxx"
 #include <fcntl.h>
 
-namespace np {
-namespace profile {
+namespace np
+{
+namespace profile
+{
 
 int probe_t::depth_ = 0;
 int probe_t::log_fd_ = -2;
 
 probe_t::probe_t(const char *function)
- :  function_(function)
+    :  function_(function)
 {
     log("begin");
     depth_++;
@@ -40,24 +42,25 @@ void probe_t::log(const char *which)
 {
     if (log_fd_ == -2)
     {
-	static const char filename[] = "novaprova.profile.dat";
-	log_fd_ = open(filename, O_WRONLY|O_CREAT|O_TRUNC, 0666);
-	if (log_fd_ < 0)
-	{
-	    fprintf(stderr, "Cannot open %s for writing: %s\n",
-		    filename, strerror(errno));
-	}
+        static const char filename[] = "novaprova.profile.dat";
+        log_fd_ = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+        if (log_fd_ < 0)
+        {
+            fprintf(stderr, "Cannot open %s for writing: %s\n",
+                    filename, strerror(errno));
+        }
     }
 
     if (log_fd_ >= 0)
     {
-	char line[512];
-	snprintf(line, sizeof(line), "%lld %d %d %s %s\n",
-		(long long)np::util::rel_time(),
-		(int)getpid(), depth_, which, function_);
-	write(log_fd_, line, strlen(line));
+        char line[512];
+        snprintf(line, sizeof(line), "%lld %d %d %s %s\n",
+                 (long long)np::util::rel_time(),
+                 (int)getpid(), depth_, which, function_);
+        write(log_fd_, line, strlen(line));
     }
 }
 
 // close the namespaces
-}; };
+};
+};

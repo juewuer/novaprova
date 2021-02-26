@@ -32,12 +32,17 @@
 #include <cxxabi.h>
 
 #ifndef MIN
-#define MIN(x, y)   ((x) < (y) ? (x) : (y))
+    #define MIN(x, y)   ((x) < (y) ? (x) : (y))
 #endif
 
 extern char **_dl_argv;
 
-namespace np { namespace spiegel { namespace platform {
+namespace np
+{
+namespace spiegel
+{
+namespace platform
+{
 using namespace std;
 using namespace np::util;
 
@@ -46,38 +51,35 @@ using namespace np::util;
  * is confusing, but whatever */
 extern char **environ;
 
-bool
-get_argv(int *argcp, char ***argvp)
+bool get_argv(int *argcp, char ***argvp)
 {
     char **p;
     int n;
 
     /* This early, environ[] points at the area
      * above argv[], so walk down from there */
-    for (p = environ-2, n = 1;
-	 ((int *)p)[-1] != n ;
-	 --p, ++n)
-	;
+    for (p = environ - 2, n = 1;
+            ((int *)p)[-1] != n ;
+            --p, ++n)
+        ;
     *argcp = n;
     *argvp = p;
     return true;
 }
 #else
-bool
-get_argv(int *argcp, char ***argvp)
+bool get_argv(int *argcp, char ***argvp)
 {
     char **p;
 
     for (p = _dl_argv ; *p ; p++)
-	;
+        ;
     *argcp = (p - _dl_argv);
     *argvp = _dl_argv;
     return true;
 }
 #endif
 
-char *
-self_exe()
+char *self_exe()
 {
     // We could find the ELF auxv_t vector which is above the environ[]
     // passed to us by the kernel, there is usually a AT_EXECFN entry
@@ -91,11 +93,11 @@ self_exe()
     // as well use it.
     char buf[PATH_MAX];
     static const char filename[] = "/proc/self/exe";
-    int r = readlink(filename, buf, sizeof(buf)-1);
+    int r = readlink(filename, buf, sizeof(buf) - 1);
     if (r < 0)
     {
-	perror(filename);
-	return 0;
+        perror(filename);
+        return 0;
     }
     // readlink() doesn't terminate the buffer
     buf[r] = '\0';
@@ -105,8 +107,7 @@ self_exe()
 // Return the argv[0] of the given process id.  Isn't Linux' /proc
 // wonderful?  Note that we choose cmdline because it's commonly
 // readable even when the 'exe' symlink isn't.
-static char *
-get_exe_by_pid(pid_t pid)
+static char *get_exe_by_pid(pid_t pid)
 {
     char buf[PATH_MAX];
     snprintf(buf, sizeof(buf), "/proc/%u/cmdline", (unsigned)pid);
@@ -114,16 +115,16 @@ get_exe_by_pid(pid_t pid)
     FILE *fp = fopen(buf, "r");
     if (!fp)
     {
-	perror(buf);
-	return 0;
+        perror(buf);
+        return 0;
     }
 
-    int r = fread(buf, 1, sizeof(buf)-1, fp);
+    int r = fread(buf, 1, sizeof(buf) - 1, fp);
     if (r <= 0)
     {
-	perror("read");
-	fclose(fp);
-	return 0;
+        perror("read");
+        fclose(fp);
+        return 0;
     }
     buf[r] = '\0';  /* JIC */
 
@@ -134,25 +135,24 @@ get_exe_by_pid(pid_t pid)
     return xstrdup(buf);
 }
 
-static int
-add_one_linkobj(struct dl_phdr_info *info,
-		size_t size __attribute__((unused)),	// sizeof(*info)
-		void *closure)
+static int add_one_linkobj(struct dl_phdr_info *info,
+                           size_t size __attribute__((unused)),	// sizeof(*info)
+                           void *closure)
 {
     vector<linkobj_t> *vec = (vector<linkobj_t> *)closure;
 
     const char *name = info->dlpi_name;
     if (name && !*name)
-	name = NULL;
+        name = NULL;
 
     if (!name && info->dlpi_addr)
-	return 0;
+        return 0;
     if (!info->dlpi_phnum)
-	return 0;
+        return 0;
 
 #if 0
     fprintf(stderr, "dl_phdr_info { addr=%p name=%s }\n",
-	    (void *)info->dlpi_addr, info->dlpi_name);
+            (void *)info->dlpi_addr, info->dlpi_name);
 #endif
 
     linkobj_t lo;
@@ -160,13 +160,13 @@ add_one_linkobj(struct dl_phdr_info *info,
 
     for (int i = 0 ; i < info->dlpi_phnum ; i++)
     {
-	if (!info->dlpi_phdr[i].p_memsz)
-	    continue;
+        if (!info->dlpi_phdr[i].p_memsz)
+            continue;
 
-	const ElfW(Phdr) *ph = &info->dlpi_phdr[i];
-	lo.mappings.push_back(mapping_t(
-		(unsigned long)ph->p_offset, (unsigned long)ph->p_memsz,
-		(void *)((unsigned long)info->dlpi_addr + ph->p_vaddr)));
+        const ElfW(Phdr) *ph = &info->dlpi_phdr[i];
+        lo.mappings.push_back(mapping_t(
+                                  (unsigned long)ph->p_offset, (unsigned long)ph->p_memsz,
+                                  (void *)((unsigned long)info->dlpi_addr + ph->p_vaddr)));
     }
     vec->push_back(lo);
 
@@ -182,7 +182,7 @@ vector<linkobj_t> get_linkobjs()
 
 static vector<np::spiegel::mapping_t> plts;
 
-void add_plt(const np::spiegel::mapping_t &m)
+void add_plt(const np::spiegel::mapping_t& m)
 {
     plts.push_back(m);
 }
@@ -192,8 +192,8 @@ static bool is_in_plt(np::spiegel::addr_t addr)
     vector<np::spiegel::mapping_t>::const_iterator i;
     for (i = plts.begin() ; i != plts.end() ; ++i)
     {
-	if (i->contains((void *)addr))
-	    return true;
+        if (i->contains((void *)addr))
+            return true;
     }
     return false;
 }
@@ -202,11 +202,11 @@ np::spiegel::addr_t normalise_address(np::spiegel::addr_t addr)
 {
     if (is_in_plt(addr))
     {
-	Dl_info info;
-	memset(&info, 0, sizeof(info));
-	int r = dladdr((void *)addr, &info);
-	if (r)
-	    return (np::spiegel::addr_t)dlsym(RTLD_NEXT, info.dli_sname);
+        Dl_info info;
+        memset(&info, 0, sizeof(info));
+        int r = dladdr((void *)addr, &info);
+        if (r)
+            return (np::spiegel::addr_t)dlsym(RTLD_NEXT, info.dli_sname);
     }
     return addr;
 }
@@ -228,62 +228,60 @@ np::spiegel::addr_t normalise_address(np::spiegel::addr_t addr)
 
 map<addr_t, unsigned int> pagerefs;
 
-int
-text_map_writable(addr_t addr, size_t len)
+int text_map_writable(addr_t addr, size_t len)
 {
     addr_t start = page_round_down(addr);
-    addr_t end = page_round_up(addr+len);
+    addr_t end = page_round_up(addr + len);
     addr_t a;
     int r;
 
     /* increment the reference counts on every page we hit */
     for (a = start ; a < end ; a += page_size())
     {
-	map<addr_t, unsigned int>::iterator itr = pagerefs.find(a);
-	if (itr == pagerefs.end())
-	    pagerefs[a] = 1;
-	else
-	    itr->second++;
+        map<addr_t, unsigned int>::iterator itr = pagerefs.find(a);
+        if (itr == pagerefs.end())
+            pagerefs[a] = 1;
+        else
+            itr->second++;
     }
 
     /* actually change the underlying mapping in one
      * big system call. */
     r = mprotect((void *)start,
-		 (size_t)(end-start),
-		 PROT_READ|PROT_WRITE|PROT_EXEC);
+                 (size_t)(end - start),
+                 PROT_READ | PROT_WRITE | PROT_EXEC);
     if (r)
     {
-	perror("np: mprotect");
-	return -1;
+        perror("np: mprotect");
+        return -1;
     }
     return 0;
 }
 
-int
-text_restore(addr_t addr, size_t len)
+int text_restore(addr_t addr, size_t len)
 {
     addr_t start = page_round_down(addr);
-    addr_t end = page_round_up(addr+len);
+    addr_t end = page_round_up(addr + len);
     addr_t a;
     int r;
 
     /* decrement the reference counts on every page we hit */
     for (a = start ; a < end ; a += page_size())
     {
-	map<addr_t, unsigned int>::iterator itr = pagerefs.find(a);
-	if (itr == pagerefs.end())
-	    continue;
-	if (--itr->second)
-	    continue;	/* still other references */
-	pagerefs.erase(itr);
+        map<addr_t, unsigned int>::iterator itr = pagerefs.find(a);
+        if (itr == pagerefs.end())
+            continue;
+        if (--itr->second)
+            continue;	/* still other references */
+        pagerefs.erase(itr);
 
-	/* change the underlying mapping one page at a time */
-	r = mprotect((void *)a, (size_t)page_size(), PROT_READ|PROT_EXEC);
-	if (r)
-	{
-	    perror("np: mprotect");
-	    return -1;
-	}
+        /* change the underlying mapping one page at a time */
+        r = mprotect((void *)a, (size_t)page_size(), PROT_READ | PROT_EXEC);
+        if (r)
+        {
+            perror("np: mprotect");
+            return -1;
+        }
     }
 
     return 0;
@@ -292,42 +290,42 @@ text_restore(addr_t addr, size_t len)
 /* This trick doesn't work - Valgrind actively prevents
  * the simulated program from hijacking it's log fd */
 #if 0
-    if (RUNNING_ON_VALGRIND)
+if (RUNNING_ON_VALGRIND)
+{
+    /* ok, this is cheating */
+    int old_stderr = -1;
+    int fd;
+    int r;
+
+    strncpy(buf, "/tmp/spiegel-stack-XXXXXX", maxlen);
+    fd = mkstemp(buf);
+    if (fd < 0)
+        return -errno;
+    unlink(buf);
+
+    old_stderr = dup(STDERR_FILENO);
+    dup2(fd, STDERR_FILENO);
+    close(fd);
+
+    VALGRIND_PRINTF_BACKTRACE("\n");
+
+    lseek(STDERR_FILENO, 0, SEEK_SET);
+    r = read(STDERR_FILENO, buf, sizeof(buf) - 1);
+    if (r < 0)
     {
-	/* ok, this is cheating */
-	int old_stderr = -1;
-	int fd;
-	int r;
-
-	strncpy(buf, "/tmp/spiegel-stack-XXXXXX", maxlen);
-	fd = mkstemp(buf);
-	if (fd < 0)
-	    return -errno;
-	unlink(buf);
-
-	old_stderr = dup(STDERR_FILENO);
-	dup2(fd, STDERR_FILENO);
-	close(fd);
-
-	VALGRIND_PRINTF_BACKTRACE("\n");
-
-	lseek(STDERR_FILENO, 0, SEEK_SET);
-	r = read(STDERR_FILENO, buf, sizeof(buf)-1);
-	if (r < 0)
-	{
-	    r = -errno;
-	    goto out;
-	}
-	buf[r] = '\0';
-	r = 0;
-out:
-	if (old_stderr > 0)
-	{
-	    dup2(old_stderr, STDERR_FILENO);
-	    close(old_stderr);
-	}
-	return r;
+        r = -errno;
+        goto out;
     }
+    buf[r] = '\0';
+    r = 0;
+out:
+    if (old_stderr > 0)
+    {
+        dup2(old_stderr, STDERR_FILENO);
+        close(old_stderr);
+    }
+    return r;
+}
 #endif
 
 vector<np::spiegel::addr_t> get_stacktrace()
@@ -353,23 +351,22 @@ vector<np::spiegel::addr_t> get_stacktrace()
 #endif
     for (;;)
     {
-	stack.push_back(((unsigned long *)bp)[1]-_NP_ADDRSIZE-1);
-	unsigned long nextbp = ((unsigned long *)bp)[0];
-	if (!nextbp)
-	    break;
-	if (nextbp < bp)
-	    break;	// moving in the wrong direction
-	if ((nextbp - bp) > 16384)
-	    break;	// moving a heuristic "too far"
-	bp = nextbp;
+        stack.push_back(((unsigned long *)bp)[1] - _NP_ADDRSIZE - 1);
+        unsigned long nextbp = ((unsigned long *)bp)[0];
+        if (!nextbp)
+            break;
+        if (nextbp < bp)
+            break;	// moving in the wrong direction
+        if ((nextbp - bp) > 16384)
+            break;	// moving a heuristic "too far"
+        bp = nextbp;
     };
     return stack;
 }
 
 /* Return the process id of any process which is ptrace()ing us, or 0 if
  * not being ptrace'd, or -1 on error. */
-static pid_t
-get_tracer_pid()
+static pid_t get_tracer_pid()
 {
     static const char procfile[] = "/proc/self/status";
     FILE *fp;
@@ -380,21 +377,21 @@ get_tracer_pid()
     fp = fopen(procfile, "r");
     if (!fp)
     {
-	/* most probable cause is that /proc is not mounted */
-	perror(procfile);
-	return -1;
+        /* most probable cause is that /proc is not mounted */
+        perror(procfile);
+        return -1;
     }
 
     while (fgets(buf, sizeof(buf), fp))
     {
-	tok_t tok(buf);
-	p = tok.next();
-	if (!p || strcmp(p, "TracerPid:"))
-	    continue;
-	p = tok.next();
-	if (p)
-	    pid = strtoul(p, NULL, 10);
-	break;
+        tok_t tok(buf);
+        p = tok.next();
+        if (!p || strcmp(p, "TracerPid:"))
+            continue;
+        p = tok.next();
+        if (p)
+            pid = strtoul(p, NULL, 10);
+        break;
     }
 
     fclose(fp);
@@ -404,7 +401,7 @@ get_tracer_pid()
 // Determine whether this process is running under a debugger
 bool is_running_under_debugger()
 {
-    static const char * const debuggers[] = { "gdb", NULL };
+    static const char *const debuggers[] = { "gdb", NULL };
     const char *tail;
     int i;
     pid_t tracer = 0;
@@ -412,13 +409,13 @@ bool is_running_under_debugger()
 
     // Valgrind doesn't play well with debuggers
     if (RUNNING_ON_VALGRIND)
-	return false;
+        return false;
 
     tracer = get_tracer_pid();
     if (tracer < 0)
-	return false;	    /* no way to tell...so guess */
+        return false;	    /* no way to tell...so guess */
     if (!tracer)
-	return false;	/* not being ptrace()d */
+        return false;	/* not being ptrace()d */
 
     // We know we're being ptrace()d, but that could mean either that
     // we're being debugged or strace()d.  In the latter case we don't
@@ -431,27 +428,27 @@ bool is_running_under_debugger()
     command = get_exe_by_pid(tracer);
     if (!command)
     {
-	// can't tell for sure, but given we're definitely ptraced,
-	// let's guess that it's a debugger doing it
-	return true;
+        // can't tell for sure, but given we're definitely ptraced,
+        // let's guess that it's a debugger doing it
+        return true;
     }
 
     // find the filename
     tail = strrchr(command, '/');
     if (tail)
-	tail++;
+        tail++;
     else
-	tail = command;
+        tail = command;
 
     // compare against the whitelist
     for (i = 0 ; debuggers[i] ; i++)
     {
-	if (!strcmp(tail, debuggers[i]))
-	{
-	    fprintf(stderr, "np: being debugged by %s\n", command);
-	    free(command);
-	    return true;
-	}
+        if (!strcmp(tail, debuggers[i]))
+        {
+            fprintf(stderr, "np: being debugged by %s\n", command);
+            free(command);
+            return true;
+        }
     }
 
     // didn't match the whitelist, probably strace or something strange
@@ -474,36 +471,36 @@ vector<string> get_file_descriptors()
     dir = opendir(dirpath.c_str());
     if (dir)
     {
-	while ((de = readdir(dir)))
-	{
-	    if (!isdigit(de->d_name[0]))
-		continue;
+        while ((de = readdir(dir)))
+        {
+            if (!isdigit(de->d_name[0]))
+                continue;
 
-	    fd = atoi(de->d_name);
-	    if (fd == dirfd(dir))
-		continue;
+            fd = atoi(de->d_name);
+            if (fd == dirfd(dir))
+                continue;
 
-	    filepath = dirpath + string("/") + string(de->d_name);
-	    r = readlink(filepath.c_str(), buf, sizeof(buf)-1);
-	    if (r < 0)
-	    {
-		perror(filepath.c_str());
-		continue;
-	    }
-	    buf[r] = '\0';
+            filepath = dirpath + string("/") + string(de->d_name);
+            r = readlink(filepath.c_str(), buf, sizeof(buf) - 1);
+            if (r < 0)
+            {
+                perror(filepath.c_str());
+                continue;
+            }
+            buf[r] = '\0';
 
-	    // Silently ignore named pipes to and from
-	    // Valgrind's built-in gdbserver.
-	    char *tail = strrchr(buf, '/');
-	    if (tail && !strncmp(tail, "/vgdb-pipe", 10))
-		continue;
+            // Silently ignore named pipes to and from
+            // Valgrind's built-in gdbserver.
+            char *tail = strrchr(buf, '/');
+            if (tail && !strncmp(tail, "/vgdb-pipe", 10))
+                continue;
 
-	    // STL is just so screwed
-	    if (fd >= (int)fds.size())
-		fds.resize(fd+1);
-	    fds[fd] = string(buf);
-	}
-	closedir(dir);
+            // STL is just so screwed
+            if (fd >= (int)fds.size())
+                fds.resize(fd + 1);
+            fds[fd] = string(buf);
+        }
+        closedir(dir);
     }
 
     return fds;
@@ -521,14 +518,14 @@ char *current_exception_type()
      */
     type_info *tinfo = __cxxabiv1::__cxa_current_exception_type();
     if (!tinfo)
-	return 0;
+        return 0;
 
     /* 0 = success, -1 = failed allocating memory,
      * -2 = invalid name, -3 = invalid argument */
     int status = 0;
     char *demangled = __cxxabiv1::__cxa_demangle(tinfo->name(), NULL, NULL, &status);
     if (status == -1)
-	oom(); /* failed allocating memory */
+        oom(); /* failed allocating memory */
 
     return (status == 0 ? demangled : xstrdup(tinfo->name()));
 }
@@ -545,13 +542,15 @@ void cleanup_current_exception()
     __cxa_exception *header = globals->caughtExceptions;
     if (header)
     {
-	if (header->exceptionDestructor)
-	    header->exceptionDestructor(header+1);
-	__cxa_free_exception(header+1)
+        if (header->exceptionDestructor)
+            header->exceptionDestructor(header + 1);
+        __cxa_free_exception(header + 1)
     }
 #endif
 }
 
 // close namespaces
-}; }; };
+};
+};
+};
 

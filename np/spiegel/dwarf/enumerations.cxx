@@ -15,22 +15,30 @@
  */
 #include "enumerations.hxx"
 
-namespace np { namespace spiegel { namespace dwarf {
+namespace np
+{
+namespace spiegel
+{
+namespace dwarf
+{
 using namespace std;
 
-static const char * const _secnames[DW_sec_num+1] = {
+static const char *const _secnames[DW_sec_num + 1] =
+{
     ".debug_aranges", ".debug_pubnames", ".debug_info",
     ".debug_abbrev", ".debug_line", ".debug_frame",
     ".debug_str", ".debug_loc", ".debug_ranges", ".plt", 0
 };
 string_table_t secnames("", _secnames);
 
-static const char * const _childvals[] = {
+static const char *const _childvals[] =
+{
     "no", "yes", 0
 };
 string_table_t childvals("DW_CHILDREN_", _childvals);
 
-static const char * const _formvals[] = {
+static const char *const _formvals[] =
+{
     "",
     "addr", /* 0x01, */
     "",
@@ -68,7 +76,8 @@ static const char * const _formvals[] = {
 };
 string_table_t formvals("DW_FORM_", _formvals);
 
-static const char * const _tagnames[] = {
+static const char *const _tagnames[] =
+{
     "",
     "array_type",	    /* 0x01, */
     "class_type",	    /* 0x02, */
@@ -141,7 +150,8 @@ static const char * const _tagnames[] = {
 };
 string_table_t tagnames("DW_TAG_", _tagnames);
 
-static const char * const _attrnames[] = {
+static const char *const _attrnames[] =
+{
     "",
     "sibling",		/* 0x01, */
     "location",		/* 0x02, */
@@ -257,7 +267,8 @@ static const char * const _attrnames[] = {
 };
 string_table_t attrnames("DW_AT_", _attrnames);
 
-static const char * const _encvals[] = {
+static const char *const _encvals[] =
+{
     "",
     "address",		/* 0x1 */
     "boolean",		/* 0x2 */
@@ -280,4 +291,6 @@ static const char * const _encvals[] = {
 string_table_t encvals("DW_ATE_", _encvals);
 
 // close namespaces
-}; }; };
+};
+};
+};

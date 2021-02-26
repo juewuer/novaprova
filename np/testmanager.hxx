@@ -22,29 +22,45 @@
 #include <string>
 #include <vector>
 
-namespace np { namespace spiegel { namespace dwarf { class state_t; } } }
+namespace np
+{
+namespace spiegel
+{
+namespace dwarf
+{
+class state_t;
+}
+}
+}
 
-namespace np {
+namespace np
+{
 
 class classifier_t;
 
 class testmanager_t : public np::util::zalloc
 {
-public:
+  public:
     /* testmanager is a singleton */
     static testmanager_t *instance();
 
     testnode_t *find_node(const char *nm) const
     {
-	return root_ ? root_->find(nm) : 0;
+        return root_ ? root_->find(nm) : 0;
     }
-    testnode_t *get_root() { return root_; }
+    testnode_t *get_root()
+    {
+        return root_;
+    }
 
-    static void done() { delete instance_; }
+    static void done()
+    {
+        delete instance_;
+    }
 
     spiegel::function_t *find_mock_target(std::string name);
 
-private:
+  private:
     testmanager_t();
     ~testmanager_t();
 
@@ -57,7 +73,7 @@ private:
 
     static testmanager_t *instance_;
 
-    std::vector<classifier_t*> classifiers_;
+    std::vector<classifier_t *> classifiers_;
     spiegel::dwarf::state_t *spiegel_;
     testnode_t *root_;
     testnode_t *common_;	// nodes from filesystem root down to root_

@@ -20,14 +20,15 @@
 #include "np/proxy_listener.hxx"
 #include "np_priv.h"
 
-namespace np {
+namespace np
+{
 
 child_t::child_t(pid_t pid, int fd, job_t *j)
- :  pid_(pid),
-    event_pipe_(fd),
-    job_(j),
-    result_(R_UNKNOWN),
-    state_(RUNNING)
+    :  pid_(pid),
+       event_pipe_(fd),
+       job_(j),
+       result_(R_UNKNOWN),
+       state_(RUNNING)
 {
 }
 
@@ -37,54 +38,51 @@ child_t::~child_t()
     delete job_;
 }
 
-void
-child_t::handle_input()
+void child_t::handle_input()
 {
 #if _NP_DEBUG
     fprintf(stderr, "np: [%s] pid %d job %s handle_input() state=%d\n",
-	    np::util::rel_timestamp(), (int)pid_, job_->as_string().c_str(), (int)state_);
+            np::util::rel_timestamp(), (int)pid_, job_->as_string().c_str(), (int)state_);
 #endif
     if (state_ == FINISHED)
-	return;
+        return;
     if (!proxy_listener_t::handle_call(event_pipe_, job_, &result_))
     {
 #if _NP_DEBUG
-	fprintf(stderr, "np: child now finished\n");
+        fprintf(stderr, "np: child now finished\n");
 #endif
-	state_ = FINISHED;
+        state_ = FINISHED;
     }
 }
 
-void
-child_t::handle_timeout(int64_t end)
+void child_t::handle_timeout(int64_t end)
 {
     switch (state_)
     {
-    case RUNNING:
-	if (deadline_ <= end)
-	{
-	    static char buf[80];
-	    snprintf(buf, sizeof(buf), "Child process %d timed out, killing", (int)pid_);
-	    event_t ev(EV_TIMEOUT, buf);
-	    merge_result(np::runner_t::running()->raise_event(job_, &ev));
+        case RUNNING:
+            if (deadline_ <= end)
+            {
+                static char buf[80];
+                snprintf(buf, sizeof(buf), "Child process %d timed out, killing", (int)pid_);
+                event_t ev(EV_TIMEOUT, buf);
+                merge_result(np::runner_t::running()->raise_event(job_, &ev));
 
-	    kill(pid_, SIGTERM);
-	    state_ = TIMEOUT1;
-	    deadline_ = end + 3 * NANOSEC_PER_SEC;
-	}
-	break;
-    case TIMEOUT1:
-	kill(pid_, SIGKILL);
-	state_ = TIMEOUT2;
-	deadline_ = 0;
-	break;
-    default:
-	break;
+                kill(pid_, SIGTERM);
+                state_ = TIMEOUT1;
+                deadline_ = end + 3 * NANOSEC_PER_SEC;
+            }
+            break;
+        case TIMEOUT1:
+            kill(pid_, SIGKILL);
+            state_ = TIMEOUT2;
+            deadline_ = 0;
+            break;
+        default:
+            break;
     }
 }
 
-void
-child_t::merge_result(result_t r)
+void child_t::merge_result(result_t r)
 {
     result_ = merge(result_, r);
 }

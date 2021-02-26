@@ -23,12 +23,14 @@
 
 #include "np/util/tok.hxx"
 
-namespace np { namespace util {
+namespace np
+{
+namespace util
+{
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-void
-tok_t::init(char *str, const char *sep)
+void tok_t::init(char *str, const char *sep)
 {
     first_ = true;
     buf_ = str;
@@ -51,21 +53,20 @@ tok_t::tok_t(char *str, const char *sep)
 tok_t::~tok_t()
 {
     if (buf_is_ours_)
-	free(buf_);
+        free(buf_);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-const char *
-tok_t::next()
+const char *tok_t::next()
 {
     if (!buf_)
-	return 0;
+        return 0;
 
     if (first_)
     {
-	first_ = false;
-	return strtok_r(buf_, sep_, &state_);
+        first_ = false;
+        return strtok_r(buf_, sep_, &state_);
     }
 
     return strtok_r(0, sep_, &state_);
@@ -73,5 +74,6 @@ tok_t::next()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 // close the namespaces
-}; };
+};
+};
 /*END*/

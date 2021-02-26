@@ -34,20 +34,20 @@ extern __np_exceptstate_t __np_exceptstate;
 extern void __np_uncaught_event(void) __attribute__((noreturn));
 
 #define np_try \
-	__np_exceptstate.catching = true; \
-	if (!(__np_exceptstate.caught = setjmp(__np_exceptstate.jbuf)))
+    __np_exceptstate.catching = true; \
+    if (!(__np_exceptstate.caught = setjmp(__np_exceptstate.jbuf)))
 #define np_catch(x) \
-	__np_exceptstate.catching = false; \
-	(x) = __np_exceptstate.caught ? &__np_exceptstate.event : 0; \
-	if (__np_exceptstate.caught)
+    __np_exceptstate.catching = false; \
+    (x) = __np_exceptstate.caught ? &__np_exceptstate.event : 0; \
+    if (__np_exceptstate.caught)
 
 #define np_throw(ev) \
-	do { \
-	    __np_exceptstate.event = (ev); \
-	    if (__np_exceptstate.catching) \
-		longjmp(__np_exceptstate.jbuf, 1); \
-	    else \
-		__np_uncaught_event(); \
-	} while(0)
+    do { \
+        __np_exceptstate.event = (ev); \
+        if (__np_exceptstate.catching) \
+            longjmp(__np_exceptstate.jbuf, 1); \
+        else \
+            __np_uncaught_event(); \
+    } while(0)
 
 #endif /* __NP_EXCEPT_H__ */

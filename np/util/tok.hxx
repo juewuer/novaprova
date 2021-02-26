@@ -26,7 +26,10 @@
 
 #include "np/util/common.hxx"
 
-namespace np { namespace util {
+namespace np
+{
+namespace util
+{
 
 /*
  * A simple re-entrant string tokenizer, wraps strtok_r().
@@ -35,7 +38,7 @@ namespace np { namespace util {
 
 class tok_t
 {
-public:
+  public:
     /* ctors */
     tok_t(const char *str, const char *sep = 0);    /* const=>copy */
     tok_t(char *str, const char *sep = 0);  	    /* nonconst=>don't copy */
@@ -47,7 +50,7 @@ public:
      */
     const char *next();
 
-private:
+  private:
     void init(char *str, const char *sep);
 
     bool first_;
@@ -58,7 +61,8 @@ private:
 };
 
 // close the namespaces
-}; };
+};
+};
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 #endif /* __spiegel_tok_hxx__ */

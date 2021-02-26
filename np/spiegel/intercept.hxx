@@ -19,23 +19,25 @@
 #include "np/spiegel/common.hxx"
 #include "np/spiegel/platform/common.hxx"
 
-namespace np {
-namespace spiegel {
+namespace np
+{
+namespace spiegel
+{
 
 struct call_t
 {
-protected:
+  protected:
     call_t()
-     : redirect_(0),
-       retval_(0),
-       skip_(false)
+        : redirect_(0),
+          retval_(0),
+          skip_(false)
     {}
 
     addr_t redirect_;
     unsigned long retval_;
     bool skip_;
 
-public:
+  public:
     /*
      * The before() and after() methods can examine the arguments to
      * the original function with get_arg().
@@ -53,26 +55,41 @@ public:
      */
     virtual void skip(unsigned long rv)
     {
-	retval_ = rv;
-	skip_ = true;
+        retval_ = rv;
+        skip_ = true;
     }
     /*
      * The before() method can cause a given function to be called
      * instead of the original function with redirect().
      */
-    virtual void redirect(addr_t f) { redirect_ = f; }
+    virtual void redirect(addr_t f)
+    {
+        redirect_ = f;
+    }
     /*
      * The after() method can examine the return value from the
      * original function with get_retval().
      */
-    virtual unsigned long get_retval() const { return retval_; }
-    virtual unsigned long get_retval32() const { return retval_; }
-    virtual uint64_t get_retval64() const { return (uint64_t)retval_; }
+    virtual unsigned long get_retval() const
+    {
+        return retval_;
+    }
+    virtual unsigned long get_retval32() const
+    {
+        return retval_;
+    }
+    virtual uint64_t get_retval64() const
+    {
+        return (uint64_t)retval_;
+    }
     /*
      * The after() function can modify the return value from the
      * original function, before the caller sees it, with set_retval().
      */
-    virtual void set_retval(unsigned long rv) { retval_ = rv; }
+    virtual void set_retval(unsigned long rv)
+    {
+        retval_ = rv;
+    }
 };
 
 struct intercept_t : public np::util::zalloc
@@ -80,11 +97,17 @@ struct intercept_t : public np::util::zalloc
     intercept_t(addr_t a, const char *name = 0);
     virtual ~intercept_t();
 
-    virtual void before(call_t &) = 0;
-    virtual void after(call_t &) = 0;
+    virtual void before(call_t&) = 0;
+    virtual void after(call_t&) = 0;
 
-    addr_t get_address() const { return addr_; }
-    const char *get_name() const { return (name_ ? name_ : "(unknown)"); }
+    addr_t get_address() const
+    {
+        return addr_;
+    }
+    const char *get_name() const
+    {
+        return (name_ ? name_ : "(unknown)");
+    }
 
     int install();
     int uninstall();
@@ -92,14 +115,14 @@ struct intercept_t : public np::util::zalloc
     // functions for the platform-specific intercept code
     static bool is_intercepted(addr_t);
     static np::spiegel::platform::intstate_t *get_intstate(addr_t);
-    static void dispatch_before(addr_t, call_t &);
-    static void dispatch_after(addr_t, call_t &);
+    static void dispatch_before(addr_t, call_t&);
+    static void dispatch_after(addr_t, call_t&);
 
-private:
+  private:
     struct addrstate_t
     {
-	np::spiegel::platform::intstate_t state_;
-	std::vector<intercept_t*> intercepts_;
+        np::spiegel::platform::intstate_t state_;
+        std::vector<intercept_t *> intercepts_;
     };
 
     static std::map<addr_t, addrstate_t> installed_;
@@ -112,6 +135,7 @@ private:
 };
 
 // close the namespaces
-}; };
+};
+};
 
 #endif // __np_spiegel_intercept_hxx__

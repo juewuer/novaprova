@@ -29,7 +29,8 @@
  * This product includes software developed by Computing Services
  * at Carnegie Mellon University (http://www.cmu.edu/computing/).
  */
-namespace np {
+namespace np
+{
 using namespace std;
 
 enum sldisposition_t
@@ -47,25 +48,24 @@ struct slmatch_t : public np::util::zalloc
     int tag_;
 
     slmatch_t(sldisposition_t dis, int tag)
-     :  tag_(tag)
+        :  tag_(tag)
     {
-	classifier_.set_results(SL_UNKNOWN, dis);
+        classifier_.set_results(SL_UNKNOWN, dis);
     }
 };
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static vector<slmatch_t*> slmatches;
+static vector<slmatch_t *> slmatches;
 
-static void
-add_slmatch(const char *re, sldisposition_t dis, int tag)
+static void add_slmatch(const char *re, sldisposition_t dis, int tag)
 {
     slmatch_t *slm = new slmatch_t(dis, tag);
     if (!slm->classifier_.set_regexp(re, false))
     {
-	const char *msg = slm->classifier_.error_string();
-	delete slm;
-	np_throw(event_t(EV_SLMATCH, msg).with_stack());
+        const char *msg = slm->classifier_.error_string();
+        delete slm;
+        np_throw(event_t(EV_SLMATCH, msg).with_stack());
     }
 
     /* order shouldn't matter due to the way we
@@ -75,77 +75,72 @@ add_slmatch(const char *re, sldisposition_t dis, int tag)
     slmatches.push_back(slm);
 }
 
-extern "C" void
-np_syslog_fail(const char *re)
+extern "C" void np_syslog_fail(const char *re)
 {
     add_slmatch(re, SL_FAIL, 0);
 }
 
-extern "C" void
-np_syslog_ignore(const char *re)
+extern "C" void np_syslog_ignore(const char *re)
 {
     add_slmatch(re, SL_IGNORE, 0);
 }
 
-extern "C" void
-np_syslog_match(const char *re, int tag)
+extern "C" void np_syslog_match(const char *re, int tag)
 {
     add_slmatch(re, SL_COUNT, tag);
 }
 
-extern "C" unsigned int
-np_syslog_count(int tag)
+extern "C" unsigned int np_syslog_count(int tag)
 {
     unsigned int count = 0;
     int nmatches = 0;
 
-    vector<slmatch_t*>::iterator i;
+    vector<slmatch_t *>::iterator i;
     for (i = slmatches.begin() ; i != slmatches.end() ; ++i)
     {
-	slmatch_t *slm = *i;
+        slmatch_t *slm = *i;
 
-	if (tag < 0 || slm->tag_ == tag)
-	{
-	    count += slm->count_;
-	    nmatches++;
-	}
+        if (tag < 0 || slm->tag_ == tag)
+        {
+            count += slm->count_;
+            nmatches++;
+        }
     }
 
     if (!nmatches)
     {
-	static char buf[64];
-	snprintf(buf, sizeof(buf), "Unmatched syslog tag %d", tag);
-	np_throw(event_t(EV_SLMATCH, buf).with_stack());
+        static char buf[64];
+        snprintf(buf, sizeof(buf), "Unmatched syslog tag %d", tag);
+        np_throw(event_t(EV_SLMATCH, buf).with_stack());
     }
     return count;
 }
 
-static sldisposition_t
-find_slmatch(const char **msgp)
+static sldisposition_t find_slmatch(const char **msgp)
 {
     slmatch_t *most = NULL;
     sldisposition_t mostdis = SL_UNKNOWN;
 
-    vector<slmatch_t*>::iterator i;
+    vector<slmatch_t *>::iterator i;
     for (i = slmatches.begin() ; i != slmatches.end() ; ++i)
     {
-	slmatch_t *slm = *i;
-	sldisposition_t dis = (sldisposition_t)slm->classifier_.classify(*msgp, 0, 0);
-	if (dis != SL_UNKNOWN)
-	{
-	    /* found */
-	    if (!most || dis > mostdis)
-	    {
-		most = slm;
-		mostdis = dis;
-	    }
-	}
+        slmatch_t *slm = *i;
+        sldisposition_t dis = (sldisposition_t)slm->classifier_.classify(*msgp, 0, 0);
+        if (dis != SL_UNKNOWN)
+        {
+            /* found */
+            if (!most || dis > mostdis)
+            {
+                most = slm;
+                mostdis = dis;
+            }
+        }
     }
 
     if (!most)
-	return SL_FAIL;
+        return SL_FAIL;
     if (mostdis == SL_COUNT)
-	most->count_++;
+        most->count_++;
     return mostdis;
 }
 
@@ -158,8 +153,7 @@ find_slmatch(const char **msgp)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 
-static const char *
-syslog_priority_name(int prio)
+static const char *syslog_priority_name(int prio)
 {
     const CODE *c;
     static char buf[32];
@@ -167,30 +161,29 @@ syslog_priority_name(int prio)
     prio &= LOG_PRIMASK;
     for (c = prioritynames ; c->c_name ; c++)
     {
-	if (prio == c->c_val)
-	    return c->c_name;
+        if (prio == c->c_val)
+            return c->c_name;
     }
 
     snprintf(buf, sizeof(buf), "%d", prio);
     return buf;
 }
 
-static const char *
-vlogmsg(int prio, const char *fmt, va_list args)
+static const char *vlogmsg(int prio, const char *fmt, va_list args)
 {
     /* glibc handles %m in vfprintf() so we don't need to do
      * anything special to simulate that feature of syslog() */
-     /* TODO: find and expand %m on non-glibc platforms */
+    /* TODO: find and expand %m on non-glibc platforms */
     char *p;
     static char buf[1024];
 
-    strncpy(buf, syslog_priority_name(prio), sizeof(buf)-3);
-    buf[sizeof(buf)-3] = '\0';
+    strncpy(buf, syslog_priority_name(prio), sizeof(buf) - 3);
+    buf[sizeof(buf) - 3] = '\0';
     strcat(buf, ": ");
-    vsnprintf(buf+strlen(buf), sizeof(buf)-strlen(buf),
-	      fmt, args);
-    for (p = buf+strlen(buf)-1 ; p > buf && isspace(*p) ; p--)
-	*p = '\0';
+    vsnprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),
+              fmt, args);
+    for (p = buf + strlen(buf) - 1 ; p > buf && isspace(*p) ; p--)
+        *p = '\0';
 
     return buf;
 }
@@ -198,14 +191,12 @@ vlogmsg(int prio, const char *fmt, va_list args)
 #if defined(__GLIBC__)
 /* Under some but not all combinations of options, glibc
  * defines syslog() as an inline that calls this function */
-extern "C" void
-__syslog_chk(int prio,
-	     int whatever __attribute__((unused)),
-	     const char *fmt, ...);
-static void
-mock___syslog_chk(int prio,
-		  int whatever __attribute__((unused)),
-		  const char *fmt, ...)
+extern "C" void __syslog_chk(int prio,
+                             int whatever __attribute__((unused)),
+                             const char *fmt, ...);
+static void mock___syslog_chk(int prio,
+                              int whatever __attribute__((unused)),
+                              const char *fmt, ...)
 {
     const char *msg;
     va_list args;
@@ -214,22 +205,22 @@ mock___syslog_chk(int prio,
     msg = vlogmsg(prio, fmt, args);
     va_end(args);
 
-    switch (find_slmatch(&msg)) {
-    case SL_FAIL:
-	np_throw(event_t(EV_SLMATCH, msg).with_stack());
-	break;
-    case SL_UNKNOWN:
-	np_raise(event_t(EV_SYSLOG, msg).with_stack());
-	break;
-    case SL_COUNT:
-    case SL_IGNORE:
-	break;
+    switch (find_slmatch(&msg))
+    {
+        case SL_FAIL:
+            np_throw(event_t(EV_SLMATCH, msg).with_stack());
+            break;
+        case SL_UNKNOWN:
+            np_raise(event_t(EV_SYSLOG, msg).with_stack());
+            break;
+        case SL_COUNT:
+        case SL_IGNORE:
+            break;
     }
 }
 #endif
 
-static void
-mock_syslog(int prio, const char *fmt, ...)
+static void mock_syslog(int prio, const char *fmt, ...)
 {
     const char *msg;
     va_list args;
@@ -238,28 +229,29 @@ mock_syslog(int prio, const char *fmt, ...)
     msg = vlogmsg(prio, fmt, args);
     va_end(args);
 
-    switch (find_slmatch(&msg)) {
-    case SL_FAIL:
-	np_throw(event_t(EV_SLMATCH, msg).with_stack());
-	break;
-    case SL_UNKNOWN:
-	np_raise(event_t(EV_SYSLOG, msg).with_stack());
-	break;
-    case SL_COUNT:
-    case SL_IGNORE:
-	break;
+    switch (find_slmatch(&msg))
+    {
+        case SL_FAIL:
+            np_throw(event_t(EV_SLMATCH, msg).with_stack());
+            break;
+        case SL_UNKNOWN:
+            np_raise(event_t(EV_SYSLOG, msg).with_stack());
+            break;
+        case SL_COUNT:
+        case SL_IGNORE:
+            break;
     }
 }
 
 void init_syslog_intercepts(testnode_t *tn)
 {
     tn->add_mock((np::spiegel::addr_t)&syslog,
-		 "syslog",
-		 (np::spiegel::addr_t)&mock_syslog);
+                 "syslog",
+                 (np::spiegel::addr_t)&mock_syslog);
 #if defined(__GLIBC__)
     tn->add_mock((np::spiegel::addr_t)&__syslog_chk,
-		 "__syslog_chk",
-		 (np::spiegel::addr_t)&mock___syslog_chk);
+                 "__syslog_chk",
+                 (np::spiegel::addr_t)&mock___syslog_chk);
 #endif
 }
 

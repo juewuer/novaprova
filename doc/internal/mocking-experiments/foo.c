@@ -21,26 +21,27 @@ static void handle_sigtrap(int sig, siginfo_t *si, void *vuc)
     ucontext_t *uc = (ucontext_t *)vuc;
 
     printf("handle_sigtrap: signo=%d errno=%d code=%d\n",
-	    si->si_signo,
-	    si->si_errno,
-	    si->si_code);
+           si->si_signo,
+           si->si_errno,
+           si->si_code);
     // it turns out that neither si_pid nor si_address are meaningful
     // for SIGTRAP
     if (si->si_signo != SIGTRAP ||
-	si->si_code != SI_KERNEL)
-	return;
+            si->si_code != SI_KERNEL)
+        return;
     printf("handle_sigtrap: faulted at EIP 0x%08lx ESP 0x%08lx\n",
-	    (unsigned long)uc->uc_mcontext.gregs[REG_EIP],
-	    (unsigned long)uc->uc_mcontext.gregs[REG_ESP]);
+           (unsigned long)uc->uc_mcontext.gregs[REG_EIP],
+           (unsigned long)uc->uc_mcontext.gregs[REG_ESP]);
     got_sigtrap++;
 }
 
 void the_function(void)
 {
     printf("At start of the_function\n");
-woops: __asm__ volatile("int3");
+woops:
+    __asm__ volatile("int3");
     printf("At end of the_function\n");
-    printf("The faulting address should have been 0x%08lx\n", (unsigned long)&&woops);
+    printf("The faulting address should have been 0x%08lx\n", (unsigned long) && woops);
 }
 
 int main(int argc, char **argv)

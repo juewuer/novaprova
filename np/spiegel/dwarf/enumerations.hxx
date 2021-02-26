@@ -141,8 +141,8 @@ enum tag_names
     DW_TAG_rvalue_reference_type = 0x42,
     DW_TAG_template_alias = 0x43,
 
-// DW_TAG_lo_user = 0x4080,
-// DW_TAG_hi_user = 0xffff
+    // DW_TAG_lo_user = 0x4080,
+    // DW_TAG_hi_user = 0xffff
 };
 
 enum attribute_names
@@ -274,13 +274,16 @@ enum encoding_values
     DW_ATE_unsigned_char = 0x8,
     /* DWARF-4 Values, from the standard */
     DW_ATE_UTF = 0x10,
-//     DW_ATE_lo_user = 0x80,
-//     DW_ATE_hi_user = 0xff,
+    //     DW_ATE_lo_user = 0x80,
+    //     DW_ATE_hi_user = 0xff,
 };
 
-namespace np {
-namespace spiegel {
-namespace dwarf {
+namespace np
+{
+namespace spiegel
+{
+namespace dwarf
+{
 
 extern string_table_t secnames;
 extern string_table_t childvals;
@@ -290,6 +293,8 @@ extern string_table_t attrnames;
 extern string_table_t encvals;
 
 // close namespaces
-}; }; };
+};
+};
+};
 
 #endif // __np_spiegel_dwarf_enumerations_hxx__

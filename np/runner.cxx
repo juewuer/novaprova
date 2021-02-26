@@ -25,7 +25,7 @@
 #include "np_priv.h"
 #include "except.h"
 #if HAVE_VALGRIND
-#include <valgrind/memcheck.h>
+    #include <valgrind/memcheck.h>
 #endif
 
 __np_exceptstate_t __np_exceptstate;
@@ -33,37 +33,37 @@ __np_exceptstate_t __np_exceptstate;
 void __np_uncaught_event(void)
 {
     fprintf(stderr, "np: uncaught event: %s\n%s\n",
-	    __np_exceptstate.event.as_string().c_str(),
-	    __np_exceptstate.event.get_long_location().c_str());
+            __np_exceptstate.event.as_string().c_str(),
+            __np_exceptstate.event.get_long_location().c_str());
     fflush(stderr);
     abort();
 }
 
-namespace np {
+namespace np
+{
 using namespace std;
 using namespace np::util;
 
 #define dispatch_listeners(func, ...) \
     do { \
-	vector<listener_t*>::iterator _i; \
-	for (_i = listeners_.begin() ; _i != listeners_.end() ; ++_i) \
-	    (*_i)->func(__VA_ARGS__); \
+        vector<listener_t*>::iterator _i; \
+        for (_i = listeners_.begin() ; _i != listeners_.end() ; ++_i) \
+            (*_i)->func(__VA_ARGS__); \
     } while(0)
 
 runner_t *runner_t::running_;
 
-static int
-choose_timeout()
+static int choose_timeout()
 {
     if (np::spiegel::platform::is_running_under_debugger())
     {
-	fprintf(stderr, "np: disabling test timeouts under debugger\n");
-	return 0;
+        fprintf(stderr, "np: disabling test timeouts under debugger\n");
+        return 0;
     }
     int64_t timeout = 30;
 #if HAVE_VALGRIND
     if (RUNNING_ON_VALGRIND)
-	timeout *= 3;
+        timeout *= 3;
 #endif
     return timeout;
 }
@@ -79,29 +79,27 @@ runner_t::~runner_t()
     destroy_listeners();
 }
 
-void
-runner_t::set_concurrency(int n)
+void runner_t::set_concurrency(int n)
 {
     if (n == 0)
     {
-	/* shorthand for "best possible" */
-	n = sysconf(_SC_NPROCESSORS_ONLN);
+        /* shorthand for "best possible" */
+        n = sysconf(_SC_NPROCESSORS_ONLN);
     }
     if (n < 1)
-	n = 1;
+        n = 1;
     maxchildren_ = n;
 }
 
-void
-runner_t::list_tests(plan_t *plan) const
+void runner_t::list_tests(plan_t *plan) const
 {
     bool ourplan = false;
     if (!plan)
     {
-	/* build a default plan with all the tests */
-	plan = new plan_t();
-	plan->add_node(testmanager_t::instance()->get_root());
-	ourplan = true;
+        /* build a default plan with all the tests */
+        plan = new plan_t();
+        plan->add_node(testmanager_t::instance()->get_root());
+        ourplan = true;
     }
 
     /* iterate over all tests */
@@ -110,67 +108,64 @@ runner_t::list_tests(plan_t *plan) const
     plan_t::iterator pend = plan->end();
     while (pitr != pend)
     {
-	if (pitr.get_node() != tn)
-	{
-	    tn = pitr.get_node();
-	    printf("%s\n", tn->get_fullname().c_str());
-	}
-	++pitr;
+        if (pitr.get_node() != tn)
+        {
+            tn = pitr.get_node();
+            printf("%s\n", tn->get_fullname().c_str());
+        }
+        ++pitr;
     }
 
     if (ourplan)
-	delete plan;
+        delete plan;
 }
 
-int
-runner_t::run_tests(plan_t *plan)
+int runner_t::run_tests(plan_t *plan)
 {
     bool ourplan = false;
     if (!plan)
     {
-	/* build a default plan with all the tests */
-	plan =  new plan_t();
-	plan->add_node(testmanager_t::instance()->get_root());
-	ourplan = true;
+        /* build a default plan with all the tests */
+        plan =  new plan_t();
+        plan->add_node(testmanager_t::instance()->get_root());
+        ourplan = true;
     }
 
     if (!listeners_.size())
-	add_listener(new text_listener_t);
+        add_listener(new text_listener_t);
 
     begin();
     plan_t::iterator pitr = plan->begin();
     plan_t::iterator pend = plan->end();
     for (;;)
     {
-	while (children_.size() < maxchildren_ && pitr != pend)
-	{
-	    begin_job(new job_t(pitr));
-	    ++pitr;
-	}
-	if (!children_.size())
-	    break;
-	wait();
+        while (children_.size() < maxchildren_ && pitr != pend)
+        {
+            begin_job(new job_t(pitr));
+            ++pitr;
+        }
+        if (!children_.size())
+            break;
+        wait();
     }
     end();
 
     if (ourplan)
-	delete plan;
+        delete plan;
 
     return !!nfailed_;
 }
 
-void
-runner_t::destroy_listeners()
+void runner_t::destroy_listeners()
 {
-    vector<listener_t*>::iterator i;
+    vector<listener_t *>::iterator i;
     for (i = listeners_.begin() ; i != listeners_.end() ; ++i)
-	delete *i;
+        delete *i;
     listeners_.clear();
     needs_stdout_ = false;
 }
 
-void
-runner_t::add_listener(listener_t *l)
+void runner_t::add_listener(listener_t *l)
 {
     /* append to the list.  The order of adding is preserved for
      * dispatching */
@@ -178,45 +173,40 @@ runner_t::add_listener(listener_t *l)
     needs_stdout_ |= l->needs_stdout();
 }
 
-void
-runner_t::set_listener(listener_t *l)
+void runner_t::set_listener(listener_t *l)
 {
     destroy_listeners();
     listeners_.push_back(l);
 }
 
 static volatile int caught_sigchld = 0;
-static void
-handle_sigchld(int sig __attribute__((unused)))
+static void handle_sigchld(int sig __attribute__((unused)))
 {
     caught_sigchld = 1;
 }
 
-void
-runner_t::begin()
+void runner_t::begin()
 {
     static bool init = false;
 
     if (!init)
     {
-	signal(SIGCHLD, handle_sigchld);
-	init = true;
+        signal(SIGCHLD, handle_sigchld);
+        init = true;
     }
 
     running_ = this;
     dispatch_listeners(begin);
 }
 
-void
-runner_t::end()
+void runner_t::end()
 {
     dispatch_listeners(end);
     running_ = 0;
 }
 
 
-result_t
-runner_t::raise_event(job_t *j, const event_t *ev)
+result_t runner_t::raise_event(job_t *j, const event_t *ev)
 {
     event_t n_ev;
     n_ev.normalise(ev);
@@ -227,8 +217,7 @@ runner_t::raise_event(job_t *j, const event_t *ev)
 static const char tmpfile_template[] = "/tmp/novaprova.out.XXXXXX";
 #define TMPFILE_MAX (sizeof(tmpfile_template))
 
-child_t *
-runner_t::fork_child(job_t *j)
+child_t *runner_t::fork_child(job_t *j)
 {
     pid_t pid;
 #define PIPE_READ 0
@@ -246,80 +235,80 @@ runner_t::fork_child(job_t *j)
     r = pipe(pipefd);
     if (r < 0)
     {
-	perror("np: pipe");
-	exit(1);
+        perror("np: pipe");
+        exit(1);
     }
 
     if (needs_stdout_)
     {
-	strcpy(outpath, tmpfile_template);
-	outfd = mkstemp(outpath);
-	if (outfd < 0)
-	{
-	    perror(outpath);
-	    exit(1);
-	}
+        strcpy(outpath, tmpfile_template);
+        outfd = mkstemp(outpath);
+        if (outfd < 0)
+        {
+            perror(outpath);
+            exit(1);
+        }
 
-	strcpy(errpath, tmpfile_template);
-	errfd = mkstemp(errpath);
-	if (errfd < 0)
-	{
-	    perror(errpath);
-	    exit(1);
-	}
+        strcpy(errpath, tmpfile_template);
+        errfd = mkstemp(errpath);
+        if (errfd < 0)
+        {
+            perror(errpath);
+            exit(1);
+        }
     }
 
     for (;;)
     {
-	pid = fork();
-	if (pid < 0)
-	{
-	    if (errno == EAGAIN && max_sleeps-- > 0)
-	    {
-		/* rats, we fork-bombed, try again after a delay */
-		fprintf(stderr, "np: fork bomb! sleeping %u ms.\n",
-			delay_ms);
-		poll(0, 0, delay_ms);
-		delay_ms += (delay_ms>>1);	/* exponential backoff */
-		continue;
-	    }
-	    perror("np: fork");
-	    exit(1);
-	}
-	break;
+        pid = fork();
+        if (pid < 0)
+        {
+            if (errno == EAGAIN && max_sleeps-- > 0)
+            {
+                /* rats, we fork-bombed, try again after a delay */
+                fprintf(stderr, "np: fork bomb! sleeping %u ms.\n",
+                        delay_ms);
+                poll(0, 0, delay_ms);
+                delay_ms += (delay_ms >> 1);	/* exponential backoff */
+                continue;
+            }
+            perror("np: fork");
+            exit(1);
+        }
+        break;
     }
 
     if (!pid)
     {
-	/* child process: return, will run the test */
-	close(pipefd[PIPE_READ]);
-	event_pipe_ = pipefd[PIPE_WRITE];
-	if (needs_stdout_)
-	{
-	    dup2(outfd, STDOUT_FILENO);
-	    close(outfd);
-	    dup2(errfd, STDERR_FILENO);
-	    close(errfd);
-	}
-	return NULL;
+        /* child process: return, will run the test */
+        close(pipefd[PIPE_READ]);
+        event_pipe_ = pipefd[PIPE_WRITE];
+        if (needs_stdout_)
+        {
+            dup2(outfd, STDOUT_FILENO);
+            close(outfd);
+            dup2(errfd, STDERR_FILENO);
+            close(errfd);
+        }
+        return NULL;
     }
 
     /* parent process */
 
 #if _NP_DEBUG
     fprintf(stderr, "np: spawned child process %d for %s\n",
-	    (int)pid, j->as_string().c_str());
+            (int)pid, j->as_string().c_str());
 #endif
     close(pipefd[PIPE_WRITE]);
     child = new child_t(pid, pipefd[PIPE_READ], j);
     if (timeout_)
-	child->set_deadline(j->get_start() + timeout_ * NANOSEC_PER_SEC);
+        child->set_deadline(j->get_start() + timeout_ * NANOSEC_PER_SEC);
     if (needs_stdout_)
     {
-	close(outfd);
-	close(errfd);
-	j->set_stdout_path(outpath);
-	j->set_stderr_path(errpath);
+        close(outfd);
+        close(errfd);
+        j->set_stdout_path(outpath);
+        j->set_stderr_path(errpath);
     }
     children_.push_back(child);
 
@@ -328,103 +317,101 @@ runner_t::fork_child(job_t *j)
 #undef PIPE_WRITE
 }
 
-void
-runner_t::handle_events()
+void runner_t::handle_events()
 {
     int r;
     unsigned int nzeroes = 0;
 
     if (!children_.size())
-	return;
+        return;
 
     while (!caught_sigchld)
     {
-	int64_t start = rel_now();
-	int64_t timeout = -1;
-	pfd_.clear();
-	vector<child_t*>::iterator citr;
-	for (citr = children_.begin() ; citr != children_.end() ; ++citr)
-	{
-	    struct pollfd p;
-	    memset(&p, 0, sizeof(struct pollfd));
-	    int fd = (*citr)->get_input_fd();
-	    if (fd >= 0)
-	    {
-		p.fd = fd;
-		p.events |= POLLIN;
-	    }
-	    pfd_.push_back(p);
+        int64_t start = rel_now();
+        int64_t timeout = -1;
+        pfd_.clear();
+        vector<child_t *>::iterator citr;
+        for (citr = children_.begin() ; citr != children_.end() ; ++citr)
+        {
+            struct pollfd p;
+            memset(&p, 0, sizeof(struct pollfd));
+            int fd = (*citr)->get_input_fd();
+            if (fd >= 0)
+            {
+                p.fd = fd;
+                p.events |= POLLIN;
+            }
+            pfd_.push_back(p);
 
-	    int64_t deadline = (*citr)->get_deadline();
-	    if (deadline)
-	    {
-		int64_t to = deadline - start;
-		if (to <= 0)
-		    timeout = 0;	/* already overdue */
-		else if (timeout < 0 || timeout > to)
-		    timeout = to;
-	    }
-	}
+            int64_t deadline = (*citr)->get_deadline();
+            if (deadline)
+            {
+                int64_t to = deadline - start;
+                if (to <= 0)
+                    timeout = 0;	/* already overdue */
+                else if (timeout < 0 || timeout > to)
+                    timeout = to;
+            }
+        }
 
-	if (timeout == 0)
-	{
-	    if (++nzeroes > 5)
-		timeout = NANOSEC_PER_SEC;
-	}
-	else
-	{
-	    nzeroes = 0;
-	}
+        if (timeout == 0)
+        {
+            if (++nzeroes > 5)
+                timeout = NANOSEC_PER_SEC;
+        }
+        else
+        {
+            nzeroes = 0;
+        }
 
-	/* convert timeout for poll(): from nanosec to millisec
-	 * and smash all negative values to -1 */
-	timeout = (timeout < 0 ? -1 : (timeout+500000)/1000000);
+        /* convert timeout for poll(): from nanosec to millisec
+         * and smash all negative values to -1 */
+        timeout = (timeout < 0 ? -1 : (timeout + 500000) / 1000000);
 
 #if _NP_DEBUG
-	fprintf(stderr, "np: [%s] about to poll([%d fds] timeout=%lld msec)\n",
-		rel_timestamp(), (int)pfd_.size(), (long long)timeout);
+        fprintf(stderr, "np: [%s] about to poll([%d fds] timeout=%lld msec)\n",
+                rel_timestamp(), (int)pfd_.size(), (long long)timeout);
 #endif
-	r = poll(pfd_.data(), pfd_.size(), timeout);
+        r = poll(pfd_.data(), pfd_.size(), timeout);
 #if _NP_DEBUG
-	{
-	    int e = errno;
-	    fprintf(stderr, "np: [%s] poll returned %d errno %d(%s)\n",
-		    rel_timestamp(), r, e, strerror(e));
-	    vector<struct pollfd>::iterator pitr;
-	    for (pitr = pfd_.begin() ; pitr != pfd_.end() ; ++pitr)
-		fprintf(stderr, "np:     fd %d revents %d\n",
-			pitr->fd, pitr->revents);
-	    errno = e;
-	}
+        {
+            int e = errno;
+            fprintf(stderr, "np: [%s] poll returned %d errno %d(%s)\n",
+                    rel_timestamp(), r, e, strerror(e));
+            vector<struct pollfd>::iterator pitr;
+            for (pitr = pfd_.begin() ; pitr != pfd_.end() ; ++pitr)
+                fprintf(stderr, "np:     fd %d revents %d\n",
+                        pitr->fd, pitr->revents);
+            errno = e;
+        }
 #endif
-	if (r < 0)
-	{
-	    if (errno == EINTR)
-		continue;
-	    perror("np: poll");
-	    return;
-	}
-	if (r == 0)
-	{
-	    /* poll() timed out */
-	    int64_t end = rel_now();
-	    for (citr = children_.begin() ; citr != children_.end() ; ++citr)
-		(*citr)->handle_timeout(end);
-	}
-	else
-	{
-	    /* poll indicated some fds are available */
-	    vector<struct pollfd>::iterator pitr;
-	    for (pitr = pfd_.begin(), citr = children_.begin() ;
-		 citr != children_.end() ; ++pitr, ++citr)
-		if ((pitr->revents & POLLIN))
-		    (*citr)->handle_input();
-	}
+        if (r < 0)
+        {
+            if (errno == EINTR)
+                continue;
+            perror("np: poll");
+            return;
+        }
+        if (r == 0)
+        {
+            /* poll() timed out */
+            int64_t end = rel_now();
+            for (citr = children_.begin() ; citr != children_.end() ; ++citr)
+                (*citr)->handle_timeout(end);
+        }
+        else
+        {
+            /* poll indicated some fds are available */
+            vector<struct pollfd>::iterator pitr;
+            for (pitr = pfd_.begin(), citr = children_.begin() ;
+                    citr != children_.end() ; ++pitr, ++citr)
+                if ((pitr->revents & POLLIN))
+                    (*citr)->handle_input();
+        }
     }
 }
 
-void
-runner_t::reap_children()
+void runner_t::reap_children()
 {
     pid_t pid;
     int status;
@@ -432,129 +419,126 @@ runner_t::reap_children()
 
 #if _NP_DEBUG
     fprintf(stderr, "np: [%s] reap_children()\n",
-		rel_timestamp());
+            rel_timestamp());
 #endif
     for (;;)
     {
 #if _NP_DEBUG > 1
-	fprintf(stderr, "np: [%s] about to call waitpid\n",
-		rel_timestamp());
+        fprintf(stderr, "np: [%s] about to call waitpid\n",
+                rel_timestamp());
 #endif
-	pid = waitpid(-1, &status, WNOHANG);
+        pid = waitpid(-1, &status, WNOHANG);
 #if _NP_DEBUG > 1
-	{
-	    int e = errno;
-	    fprintf(stderr, "np: [%s] waitpid returns %d, errno %d(%s)\n",
-		    rel_timestamp(), (int)pid, e, strerror(errno));
-	    errno = e;
-	}
+        {
+            int e = errno;
+            fprintf(stderr, "np: [%s] waitpid returns %d, errno %d(%s)\n",
+                    rel_timestamp(), (int)pid, e, strerror(errno));
+            errno = e;
+        }
 #endif
-	if (pid == 0)
-	    break;
-	if (pid < 0)
-	{
-	    if (errno == ESRCH || errno == ECHILD)
-		break;
-	    perror("np: waitpid");
-	    return;
-	}
-	if (WIFSTOPPED(status))
-	{
-	    fprintf(stderr, "np: process %d stopped on signal %d, ignoring\n",
-		    (int)pid, WSTOPSIG(status));
-	    continue;
-	}
+        if (pid == 0)
+            break;
+        if (pid < 0)
+        {
+            if (errno == ESRCH || errno == ECHILD)
+                break;
+            perror("np: waitpid");
+            return;
+        }
+        if (WIFSTOPPED(status))
+        {
+            fprintf(stderr, "np: process %d stopped on signal %d, ignoring\n",
+                    (int)pid, WSTOPSIG(status));
+            continue;
+        }
 #if _NP_DEBUG
-	fprintf(stderr, "np: [%s] reaped process %d\n",
-		rel_timestamp(), (int)pid);
+        fprintf(stderr, "np: [%s] reaped process %d\n",
+                rel_timestamp(), (int)pid);
 #endif
-	vector<child_t*>::iterator itr;
-	for (itr = children_.begin() ;
-	     itr != children_.end() && (*itr)->get_pid() != pid ;
-	     ++itr)
-	    ;
-	if (itr == children_.end())
-	{
-	    /* some other process */
-	    fprintf(stderr, "np: reaped stray process %d\n", (int)pid);
-	    /* TODO: this is probably eventworthy */
-	    continue;	    /* whatever */
-	}
-	child_t *child = *itr;
+        vector<child_t *>::iterator itr;
+        for (itr = children_.begin() ;
+                itr != children_.end() && (*itr)->get_pid() != pid ;
+                ++itr)
+            ;
+        if (itr == children_.end())
+        {
+            /* some other process */
+            fprintf(stderr, "np: reaped stray process %d\n", (int)pid);
+            /* TODO: this is probably eventworthy */
+            continue;	    /* whatever */
+        }
+        child_t *child = *itr;
 
-	if (WIFEXITED(status))
-	{
-	    if (WEXITSTATUS(status))
-	    {
-		snprintf(msg, sizeof(msg),
-			 "child process %d exited with %d",
-			 (int)pid, WEXITSTATUS(status));
-		event_t ev(EV_EXIT, msg);
-		child->merge_result(raise_event(child->get_job(), &ev));
-	    }
-	}
-	else if (WIFSIGNALED(status))
-	{
-	    snprintf(msg, sizeof(msg),
-		    "child process %d died on signal %d",
-		    (int)pid, WTERMSIG(status));
-	    event_t ev(EV_SIGNAL, msg);
-	    child->merge_result(raise_event(child->get_job(), &ev));
-	}
+        if (WIFEXITED(status))
+        {
+            if (WEXITSTATUS(status))
+            {
+                snprintf(msg, sizeof(msg),
+                         "child process %d exited with %d",
+                         (int)pid, WEXITSTATUS(status));
+                event_t ev(EV_EXIT, msg);
+                child->merge_result(raise_event(child->get_job(), &ev));
+            }
+        }
+        else if (WIFSIGNALED(status))
+        {
+            snprintf(msg, sizeof(msg),
+                     "child process %d died on signal %d",
+                     (int)pid, WTERMSIG(status));
+            event_t ev(EV_SIGNAL, msg);
+            child->merge_result(raise_event(child->get_job(), &ev));
+        }
 
-	/* test is finished; if nothing went wrong then PASS */
-	child->merge_result(np::R_PASS);
+        /* test is finished; if nothing went wrong then PASS */
+        child->merge_result(np::R_PASS);
 
-	/* notify listeners */
-	nfailed_ += (child->get_result() == R_FAIL);
-	nrun_++;
-	child->get_job()->post_run(true);
-	dispatch_listeners(end_job, child->get_job(), child->get_result());
+        /* notify listeners */
+        nfailed_ += (child->get_result() == R_FAIL);
+        nrun_++;
+        child->get_job()->post_run(true);
+        dispatch_listeners(end_job, child->get_job(), child->get_result());
 
-	/* detach and clean up */
-	children_.erase(itr);
-	delete child;
+        /* detach and clean up */
+        children_.erase(itr);
+        delete child;
     }
 
     caught_sigchld = 0;
     /* nothing to reap here, move along */
 }
 
-void
-runner_t::run_function(functype_t ft, np::spiegel::function_t *f)
+void runner_t::run_function(functype_t ft, np::spiegel::function_t *f)
 {
     vector<np::spiegel::value_t> args;
     np::spiegel::value_t ret = f->invoke(args);
 
     if (ft == FT_TEST)
     {
-	assert(ret.which == np::spiegel::type_t::TC_VOID);
+        assert(ret.which == np::spiegel::type_t::TC_VOID);
     }
     else
     {
-	assert(ret.which == np::spiegel::type_t::TC_SIGNED_LONG_LONG);
-	int r = ret.val.vsint;
+        assert(ret.which == np::spiegel::type_t::TC_SIGNED_LONG_LONG);
+        int r = ret.val.vsint;
 
-	if (r)
-	{
-	    static char cond[64];
-	    snprintf(cond, sizeof(cond), "fixture returned %d", r);
-	    np_throw(event_t(EV_FIXTURE, cond).in_function(f));
-	}
+        if (r)
+        {
+            static char cond[64];
+            snprintf(cond, sizeof(cond), "fixture returned %d", r);
+            np_throw(event_t(EV_FIXTURE, cond).in_function(f));
+        }
     }
 }
 
-void
-runner_t::run_fixtures(testnode_t *tn, functype_t type)
+void runner_t::run_fixtures(testnode_t *tn, functype_t type)
 {
-    list<np::spiegel::function_t*> fixtures = tn->get_fixtures(type);
-    list<np::spiegel::function_t*>::iterator itr;
+    list<np::spiegel::function_t *> fixtures = tn->get_fixtures(type);
+    list<np::spiegel::function_t *>::iterator itr;
     for (itr = fixtures.begin() ; itr != fixtures.end() ; ++itr)
-	run_function(type, *itr);
+        run_function(type, *itr);
 }
 
-result_t
-runner_t::valgrind_errors(job_t *j, result_t res)
+result_t runner_t::valgrind_errors(job_t *j, result_t res)
 {
 #if HAVE_VALGRIND
     unsigned long leaked = 0;
@@ -568,27 +552,26 @@ runner_t::valgrind_errors(job_t *j, result_t res)
     VALGRIND_COUNT_LEAKS(leaked, dubious, reachable, suppressed);
     if (leaked)
     {
-	snprintf(msg, sizeof(msg),
-		 "%lu bytes of memory leaked", leaked);
-	event_t ev(EV_VALGRIND, msg);
-	res = merge(res, raise_event(j, &ev));
+        snprintf(msg, sizeof(msg),
+                 "%lu bytes of memory leaked", leaked);
+        event_t ev(EV_VALGRIND, msg);
+        res = merge(res, raise_event(j, &ev));
     }
 
     nerrors = VALGRIND_COUNT_ERRORS;
     if (nerrors)
     {
-	snprintf(msg, sizeof(msg),
-		 "%lu unsuppressed errors found by valgrind", nerrors);
-	event_t ev(EV_VALGRIND, msg);
-	res = merge(res, raise_event(j, &ev));
+        snprintf(msg, sizeof(msg),
+                 "%lu unsuppressed errors found by valgrind", nerrors);
+        event_t ev(EV_VALGRIND, msg);
+        res = merge(res, raise_event(j, &ev));
     }
 #endif
 
     return res;
 }
 
-result_t
-runner_t::descriptor_leaks(job_t *j, const vector<string> &prefds, result_t res)
+result_t runner_t::descriptor_leaks(job_t *j, const vector<string>& prefds, result_t res)
 {
     vector<string> postfds = np::spiegel::platform::get_file_descriptors();
     unsigned int fd = 0;
@@ -598,33 +581,32 @@ runner_t::descriptor_leaks(job_t *j, const vector<string> &prefds, result_t res)
     unsigned maxfd = max(prefds.size(), postfds.size());
     for (fd = 0 ; fd < maxfd ; fd++)
     {
-	const string &pre = (fd < prefds.size() ? prefds[fd] : none);
-	const string &post = (fd < postfds.size() ? postfds[fd] : none);
+        const string& pre = (fd < prefds.size() ? prefds[fd] : none);
+        const string& post = (fd < postfds.size() ? postfds[fd] : none);
 
-	if (pre == post)
-	    continue;
+        if (pre == post)
+            continue;
 
-	if (post == "")
-	    snprintf(msg, sizeof(msg),
-		     "test closed file descriptor %d -> %s\n",
-		    fd, pre.c_str());
-	else if (pre == "")
-	    snprintf(msg, sizeof(msg),
-		     "test leaked file descriptor %d -> %s\n",
-		     fd, post.c_str());
-	else
-	    snprintf(msg, sizeof(msg),
-		     "test reopened file descriptor %d -> %s as %s\n",
-		     fd, pre.c_str(), post.c_str());
-	event_t ev(EV_FDLEAK, msg);
-	res = merge(res, raise_event(j, &ev));
+        if (post == "")
+            snprintf(msg, sizeof(msg),
+                     "test closed file descriptor %d -> %s\n",
+                     fd, pre.c_str());
+        else if (pre == "")
+            snprintf(msg, sizeof(msg),
+                     "test leaked file descriptor %d -> %s\n",
+                     fd, post.c_str());
+        else
+            snprintf(msg, sizeof(msg),
+                     "test reopened file descriptor %d -> %s as %s\n",
+                     fd, pre.c_str(), post.c_str());
+        event_t ev(EV_FDLEAK, msg);
+        res = merge(res, raise_event(j, &ev));
     }
 
     return res;
 }
 
-result_t
-runner_t::run_test_code(job_t *j)
+result_t runner_t::run_test_code(job_t *j)
 {
     testnode_t *tn = j->get_node();
     result_t res = R_UNKNOWN;
@@ -636,39 +618,39 @@ runner_t::run_test_code(job_t *j)
 
     np_try
     {
-	run_fixtures(tn, FT_BEFORE);
+        run_fixtures(tn, FT_BEFORE);
     }
     np_catch(ev)
     {
-	ev->in_functype(FT_BEFORE);
-	res = merge(res, raise_event(j, ev));
+        ev->in_functype(FT_BEFORE);
+        res = merge(res, raise_event(j, ev));
     }
 
     if (res == R_UNKNOWN)
     {
-	np_try
-	{
-	    run_function(FT_TEST, tn->get_function(FT_TEST));
-	}
-	np_catch(ev)
-	{
-	    ev->in_functype(FT_TEST);
-	    res = merge(res, raise_event(j, ev));
-	}
+        np_try
+        {
+            run_function(FT_TEST, tn->get_function(FT_TEST));
+        }
+        np_catch(ev)
+        {
+            ev->in_functype(FT_TEST);
+            res = merge(res, raise_event(j, ev));
+        }
 
-	np_try
-	{
-	    run_fixtures(tn, FT_AFTER);
-	}
-	np_catch(ev)
-	{
-	    ev->in_functype(FT_AFTER);
-	    res = merge(res, raise_event(j, ev));
-	}
+        np_try
+        {
+            run_fixtures(tn, FT_AFTER);
+        }
+        np_catch(ev)
+        {
+            ev->in_functype(FT_AFTER);
+            res = merge(res, raise_event(j, ev));
+        }
 
-	/* If we got this far and nothing bad
-	 * happened, we might have passed */
-	res = merge(res, R_PASS);
+        /* If we got this far and nothing bad
+         * happened, we might have passed */
+        res = merge(res, R_PASS);
     }
 
     j->post_run(false);
@@ -682,21 +664,20 @@ runner_t::run_test_code(job_t *j)
 }
 
 
-void
-runner_t::begin_job(job_t *j)
+void runner_t::begin_job(job_t *j)
 {
     child_t *child;
     result_t res;
 
-//     {
-// 	static int n = 0;
-// 	if (++n > 60)
-// 	    return;
-//     }
+    //     {
+    // 	static int n = 0;
+    // 	if (++n > 60)
+    // 	    return;
+    //     }
 
 #if _NP_DEBUG
     fprintf(stderr, "np: [%s] begin job %s\n",
-	    rel_timestamp(), j->as_string().c_str());
+            rel_timestamp(), j->as_string().c_str());
 #endif
 
     dispatch_listeners(begin_job, j);
@@ -704,7 +685,7 @@ runner_t::begin_job(job_t *j)
 
     child = fork_child(j);
     if (child)
-	return; /* parent process */
+        return; /* parent process */
 
     /* child process */
     set_listener(new proxy_listener_t(event_pipe_));
@@ -712,14 +693,13 @@ runner_t::begin_job(job_t *j)
     dispatch_listeners(end_job, j, res);
 #if _NP_DEBUG
     fprintf(stderr, "np: [%s] child process %d (%s) exiting\n",
-	    rel_timestamp(), (int)getpid(), j->as_string().c_str());
+            rel_timestamp(), (int)getpid(), j->as_string().c_str());
 #endif
     delete j;
     exit(0);
 }
 
-void
-runner_t::wait()
+void runner_t::wait()
 {
     handle_events();
     reap_children();
@@ -745,8 +725,7 @@ using namespace np;
  *
  * \ingroup main
  */
-extern "C" void
-np_set_concurrency(np_runner_t *runner, int n)
+extern "C" void np_set_concurrency(np_runner_t *runner, int n)
 {
     runner->set_concurrency(n);
 }
@@ -762,8 +741,7 @@ np_set_concurrency(np_runner_t *runner, int n)
  *
  * \ingroup main
  */
-extern "C" void
-np_list_tests(np_runner_t *runner, np_plan_t *plan)
+extern "C" void np_list_tests(np_runner_t *runner, np_plan_t *plan)
 {
     runner->list_tests(plan);
 }
@@ -790,21 +768,20 @@ np_list_tests(np_runner_t *runner, np_plan_t *plan)
  *
  * \ingroup main
  */
-extern "C" bool
-np_set_output_format(np_runner_t *runner, const char *fmt)
+extern "C" bool np_set_output_format(np_runner_t *runner, const char *fmt)
 {
     if (!strcmp(fmt, "junit"))
     {
-	runner->add_listener(new junit_listener_t);
-	return true;
+        runner->add_listener(new junit_listener_t);
+        return true;
     }
     else if (!strcmp(fmt, "text"))
     {
-	runner->add_listener(new text_listener_t);
-	return true;
+        runner->add_listener(new text_listener_t);
+        return true;
     }
     else
-	return false;
+        return false;
 }
 
 /**
@@ -817,8 +794,7 @@ np_set_output_format(np_runner_t *runner, const char *fmt)
  *
  * \ingroup main
  */
-extern "C" int
-np_run_tests(np_runner_t *runner, np_plan_t *plan)
+extern "C" int np_run_tests(np_runner_t *runner, np_plan_t *plan)
 {
     return runner->run_tests(plan);
 }
@@ -835,8 +811,7 @@ np_run_tests(np_runner_t *runner, np_plan_t *plan)
  *
  * \ingroup misc
  */
-extern "C" int
-np_get_timeout()
+extern "C" int np_get_timeout()
 {
     np_runner_t *runner = runner_t::running();
     return runner ? runner->get_timeout() : 0;

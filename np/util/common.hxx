@@ -21,18 +21,18 @@
 #define HAVE_STDINT_H 1
 
 #if HAVE_STDINT_H
-/*
- * Glibc <stdint.h> says:
- * The ISO C 9X standard specifies that in C++ implementations these
- * macros [UINT64_MAX et al] should only be defined if explicitly requested.
- */
-#define __STDC_LIMIT_MACROS 1
+    /*
+    * Glibc <stdint.h> says:
+    * The ISO C 9X standard specifies that in C++ implementations these
+    * macros [UINT64_MAX et al] should only be defined if explicitly requested.
+    */
+    #define __STDC_LIMIT_MACROS 1
 #endif
 
 #include <stdio.h>
 #include <limits.h>
 #if HAVE_STDINT_H
-#include <stdint.h>
+    #include <stdint.h>
 #endif
 #include <stdlib.h>
 #include <unistd.h>
@@ -48,7 +48,7 @@
 #include <sys/signal.h>
 #include <sys/poll.h>
 #if HAVE_VALGRIND
-#include <valgrind/memcheck.h>
+    #include <valgrind/memcheck.h>
 #endif
 #include <string>
 #include <map>
@@ -60,7 +60,7 @@
 // Provide an empty definition of __attribute__ so
 // we can just use it even on non-gcc compilers
 #if !defined(__GNUC__) && !defined(__attribute__)
-#define __attribute__(x)
+    #define __attribute__(x)
 #endif
 
 /*
@@ -69,15 +69,17 @@
  * Most of the NovaProva library appears in the `np` namespace.
  * For now the C++ API is undocumented.
  */
-namespace np {
-namespace util {
+namespace np
+{
+namespace util
+{
 
 extern int u32cmp(uint32_t ul1, uint32_t ul2);
 extern int u64cmp(uint64_t ull1, uint64_t ull2);
 
 extern void fatal(const char *fmt, ...)
-    __attribute__ (( noreturn ))
-    __attribute__ (( format(printf,1,2) ));
+__attribute__((noreturn))
+__attribute__((format(printf, 1, 2)));
 
 extern void oom(void) __attribute__((noreturn));
 extern void *xmalloc(size_t sz);
@@ -90,9 +92,15 @@ extern const char *argv0;
 
 class zalloc
 {
-public:
-    void *operator new(size_t sz) { return xmalloc(sz); }
-    void operator delete(void *x) { free(x); }
+  public:
+    void *operator new (size_t sz)
+    {
+        return xmalloc(sz);
+    }
+    void operator delete (void *x)
+    {
+        free(x);
+    }
 };
 
 extern std::string hex(unsigned long x);
@@ -112,6 +120,7 @@ extern unsigned long page_round_up(unsigned long x);
 extern unsigned long page_round_down(unsigned long x);
 
 // close the namespaces
-}; };
+};
+};
 
 #endif /* __NP_COMMON_HXX__ */

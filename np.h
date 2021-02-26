@@ -25,7 +25,8 @@
  */
 
 #ifdef __cplusplus
-namespace np {
+namespace np
+{
 class plan_t;
 class runner_t;
 };
@@ -56,7 +57,7 @@ extern void __np_pass(const char *file, int line);
 extern void __np_fail(const char *file, int line);
 extern void __np_notapplicable(const char *file, int line);
 extern void __np_assert_failed(const char *filename, int lineno,
-				const char *fmt, ...);
+                               const char *fmt, ...);
 
 /**
  * \defgroup result_macros Result Macros
@@ -88,95 +89,95 @@ extern void __np_assert_failed(const char *filename, int lineno,
 /** Test that a given boolean condition is true, otherwise FAIL the test. */
 #define NP_ASSERT(cc) \
     do { \
-	if (!(cc)) \
-	    __np_assert_failed(__FILE__, __LINE__, \
-	    "NP_ASSERT(" #cc ")"); \
+        if (!(cc)) \
+            __np_assert_failed(__FILE__, __LINE__, \
+                               "NP_ASSERT(" #cc ")"); \
     } while(0)
 /** Test that a given boolean condition is true, otherwise FAIL the test.
  * This is the same as @c NP_ASSERT except that the message printed on
  * failure is slightly more helpful.  */
 #define NP_ASSERT_TRUE(a) \
     do { \
-	bool _a = (a); \
-	if (!_a) \
-	    __np_assert_failed(__FILE__, __LINE__, \
-	    "NP_ASSERT_TRUE(" #a "=%u)", _a); \
+        bool _a = (a); \
+        if (!_a) \
+            __np_assert_failed(__FILE__, __LINE__, \
+                               "NP_ASSERT_TRUE(" #a "=%u)", _a); \
     } while(0)
 /** Test that a given boolean condition is false, otherwise FAIL the test. */
 #define NP_ASSERT_FALSE(a) \
     do { \
-	bool _a = (a); \
-	if (_a) \
-	    __np_assert_failed(__FILE__, __LINE__, \
-	    "NP_ASSERT_FALSE(" #a "=%u)", _a); \
+        bool _a = (a); \
+        if (_a) \
+            __np_assert_failed(__FILE__, __LINE__, \
+                               "NP_ASSERT_FALSE(" #a "=%u)", _a); \
     } while(0)
 /** Test that two signed integers are equal, otherwise FAIL the test. */
 #define NP_ASSERT_EQUAL(a, b) \
     do { \
-	long long _a = (a), _b = (b); \
-	if (!(_a == _b)) \
-	    __np_assert_failed(__FILE__, __LINE__, \
-	    "NP_ASSERT_EQUAL(" #a "=%lld, " #b "=%lld)", _a, _b); \
+        long long _a = (a), _b = (b); \
+        if (!(_a == _b)) \
+            __np_assert_failed(__FILE__, __LINE__, \
+                               "NP_ASSERT_EQUAL(" #a "=%lld, " #b "=%lld)", _a, _b); \
     } while(0)
 /** Test that two signed integers are not equal, otherwise FAIL the test. */
 #define NP_ASSERT_NOT_EQUAL(a, b) \
     do { \
-	long long _a = (a), _b = (b); \
-	if (!(_a != _b)) \
-	    __np_assert_failed(__FILE__, __LINE__, \
-	    "NP_ASSERT_NOT_EQUAL(" #a "=%lld, " #b "=%lld)", _a, _b); \
+        long long _a = (a), _b = (b); \
+        if (!(_a != _b)) \
+            __np_assert_failed(__FILE__, __LINE__, \
+                               "NP_ASSERT_NOT_EQUAL(" #a "=%lld, " #b "=%lld)", _a, _b); \
     } while(0)
 /** Test that two pointers are equal, otherwise FAIL the test. */
 #define NP_ASSERT_PTR_EQUAL(a, b) \
     do { \
-	const void *_a = (a), *_b = (b); \
-	if (!(_a == _b)) \
-	    __np_assert_failed(__FILE__, __LINE__, \
-	    "NP_ASSERT_PTR_EQUAL(" #a "=%p, " #b "=%p)", _a, _b); \
+        const void *_a = (a), *_b = (b); \
+        if (!(_a == _b)) \
+            __np_assert_failed(__FILE__, __LINE__, \
+                               "NP_ASSERT_PTR_EQUAL(" #a "=%p, " #b "=%p)", _a, _b); \
     } while(0)
 /** Test that two pointers are not equal, otherwise FAIL the test. */
 #define NP_ASSERT_PTR_NOT_EQUAL(a, b) \
     do { \
-	const void *_a = (a), *_b = (b); \
-	if (!(_a != _b)) \
-	    __np_assert_failed(__FILE__, __LINE__, \
-	    "NP_ASSERT_PTR_NOT_EQUAL(" #a "=%p, " #b "=%p)", _a, _b); \
+        const void *_a = (a), *_b = (b); \
+        if (!(_a != _b)) \
+            __np_assert_failed(__FILE__, __LINE__, \
+                               "NP_ASSERT_PTR_NOT_EQUAL(" #a "=%p, " #b "=%p)", _a, _b); \
     } while(0)
 /** Test that a pointer is NULL, otherwise FAIL the test. */
 #define NP_ASSERT_NULL(a) \
     do { \
-	const void *_a = (a); \
-	if (!(_a == NULL)) \
-	    __np_assert_failed(__FILE__, __LINE__, \
-	    "NP_ASSERT_NULL(" #a "=%p)", _a); \
+        const void *_a = (a); \
+        if (!(_a == NULL)) \
+            __np_assert_failed(__FILE__, __LINE__, \
+                               "NP_ASSERT_NULL(" #a "=%p)", _a); \
     } while(0)
 /** Test that a pointer is not NULL, otherwise FAIL the test. */
 #define NP_ASSERT_NOT_NULL(a) \
     do { \
-	const void *_a = (a); \
-	if (!(_a != NULL)) \
-	    __np_assert_failed(__FILE__, __LINE__, \
-	    "NP_ASSERT_NOT_NULL(" #a "=%p)", _a); \
+        const void *_a = (a); \
+        if (!(_a != NULL)) \
+            __np_assert_failed(__FILE__, __LINE__, \
+                               "NP_ASSERT_NOT_NULL(" #a "=%p)", _a); \
     } while(0)
 /** Test that two strings are equal, otherwise FAIL the test.
  * Either string can be NULL; NULL compares like the empty string.
  */
 #define NP_ASSERT_STR_EQUAL(a, b) \
     do { \
-	const char *_a = (a), *_b = (b); \
-	if (strcmp(_a ? _a : "", _b ? _b : "")) \
-	    __np_assert_failed(__FILE__, __LINE__, \
-	    "NP_ASSERT_STR_EQUAL(" #a "=\"%s\", " #b "=\"%s\")", _a, _b); \
+        const char *_a = (a), *_b = (b); \
+        if (strcmp(_a ? _a : "", _b ? _b : "")) \
+            __np_assert_failed(__FILE__, __LINE__, \
+                               "NP_ASSERT_STR_EQUAL(" #a "=\"%s\", " #b "=\"%s\")", _a, _b); \
     } while(0)
 /** Test that two strings are not equal, otherwise FAIL the test.
  * Either string can be NULL, it compares like the empty string.
  */
 #define NP_ASSERT_STR_NOT_EQUAL(a, b) \
     do { \
-	const char *_a = (a), *_b = (b); \
-	if (!strcmp(_a ? _a : "", _b ? _b : "")) \
-	    __np_assert_failed(__FILE__, __LINE__, \
-	    "NP_ASSERT_STR_NOT_EQUAL(" #a "=\"%s\", " #b "=\"%s\")", _a, _b); \
+        const char *_a = (a), *_b = (b); \
+        if (!strcmp(_a ? _a : "", _b ? _b : "")) \
+            __np_assert_failed(__FILE__, __LINE__, \
+                               "NP_ASSERT_STR_NOT_EQUAL(" #a "=\"%s\", " #b "=\"%s\")", _a, _b); \
     } while(0)
 
 /**
@@ -265,8 +266,8 @@ struct __np_param_dec
     static const struct __np_param_dec *__np_parameter_##nm(void) __attribute__((unused)); \
     static const struct __np_param_dec *__np_parameter_##nm(void) \
     { \
-	static const struct __np_param_dec d = { & nm , vals }; \
-	return &d; \
+        static const struct __np_param_dec d = { & nm , vals }; \
+        return &d; \
     }
 
 /**
